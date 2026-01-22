@@ -1,0 +1,731 @@
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.audio_container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1vh 0;
+}
+
+/* ==================== LAYOUT PRINCIPAL ==================== */
+.audio_layout {
+  display: grid;
+  grid-template-columns: 70% 28%;
+  gap: 2%;
+  width: 100%;
+  height: 92vh;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+/* ==================== LEFT COLUMN ==================== */
+.audio_left {
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+}
+
+/* ==================== ZONA DE AUDIO ==================== */
+.audio_zone {
+  flex: 1;
+  background: var(--wb);
+  border: 0.35vh dashed var(--bg5);
+  border-radius: 1.2vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--tr_m);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 2vh rgba(0,0,0,0.05);
+}
+
+.audio_zone.playing {
+  border: none !important;
+  cursor: default;
+}
+
+.audio_zone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, var(--bg4) 100%);
+  opacity: 0;
+  transition: opacity var(--tr_m);
+  pointer-events: none;
+}
+
+.audio_zone:not(.playing):hover::before {
+  opacity: 1;
+}
+
+.audio_zone:not(.playing):hover {
+  border-color: var(--mco);
+  background: var(--bg4);
+  transform: translateY(-0.4vh);
+  box-shadow: 0 1vh 2.5vh rgba(0,0,0,0.12);
+}
+
+.audio_zone.dragover {
+  border-color: var(--success);
+  border-width: 0.4vh;
+  background: rgba(60, 215, 65, 0.15);
+  transform: scale(1.02);
+  box-shadow: 0 0 2vh var(--success);
+}
+
+/* ==================== PLACEHOLDER ==================== */
+.audio_placeholder {
+  text-align: center;
+  padding: 4vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vh;
+}
+
+.audio_placeholder i {
+  font-size: 12vh;
+  color: var(--bg5);
+  animation: floatIcon 3s ease-in-out infinite;
+  filter: drop-shadow(0 0.5vh 1vh rgba(0,0,0,0.1));
+  transition: all var(--tr_m);
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1.5vh) scale(1.05); }
+}
+
+.audio_zone:hover .audio_placeholder i {
+  color: var(--mco);
+  animation: pulse 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 1.5vh var(--mco));
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.audio_placeholder h2 {
+  font-size: var(--fz_l1);
+  font-weight: 700;
+  color: var(--tx);
+  margin: 0;
+}
+
+.audio_placeholder p {
+  font-size: var(--fz_m3);
+  color: var(--txe);
+  margin: 0;
+}
+
+.audio_placeholder strong {
+  color: var(--mco);
+  font-weight: 700;
+}
+
+.upload_hint {
+  padding: 1.2vh 2vh;
+  background: var(--bg1);
+  border-radius: 0.8vh;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8vh;
+  box-shadow: 0 0.3vh 0.8vh rgba(0,0,0,0.1);
+  border: 0.1vh solid var(--bg5);
+}
+
+.upload_hint kbd {
+  background: var(--bg3);
+  padding: 0.4vh 1vh;
+  border-radius: 0.4vh;
+  font-family: 'Courier New', monospace;
+  font-size: var(--fz_s4);
+  font-weight: 700;
+  color: var(--tx);
+  box-shadow: 0 0.2vh 0.5vh rgba(0,0,0,0.25);
+  border: 0.1vh solid var(--bg5);
+}
+
+/* ==================== AUDIO PLAYER CON WAVES ==================== */
+.audio_player {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--bg1) 100%);
+  border-radius: 1.2vh;
+  overflow: hidden;
+  animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 4vh;
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.audio_info {
+  text-align: center;
+  margin-bottom: 3vh;
+  z-index: 2;
+}
+
+.audio_title {
+  font-size: var(--fz_l1);
+  font-weight: 700;
+  color: var(--tx);
+  margin: 0 0 0.5vh 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  text-shadow: 0 0.2vh 0.8vh rgba(0,0,0,0.3);
+}
+
+.audio_artist {
+  font-size: var(--fz_m3);
+  color: var(--txe);
+  margin: 0;
+  font-weight: 500;
+}
+
+#audioWaves {
+  width: 100%;
+  height: 40vh;
+  border-radius: 0.8vh;
+  background: transparent;
+  box-shadow: none;
+  display: block;
+  margin: 0 auto;
+}
+
+.waves_overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity var(--tr_m);
+  pointer-events: none;
+  border-radius: 1.2vh;
+}
+
+.audio_player:hover .waves_overlay,
+.waves_overlay:not(.hide) {
+  opacity: 1;
+}
+
+.waves_overlay.hide {
+  opacity: 0 !important;
+}
+
+.btn_play_waves {
+  width: 10vh;
+  height: 10vh;
+  border: none;
+  border-radius: 50%;
+  background: var(--mco);
+  color: var(--txa);
+  font-size: var(--fz_x1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--tr_m);
+  box-shadow: 0 0.8vh 2.5vh rgba(0,0,0,0.4);
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+
+.btn_play_waves:hover {
+  transform: scale(1.1);
+  box-shadow: 0 1vh 3vh rgba(0,0,0,0.5);
+}
+
+.btn_play_waves:active {
+  transform: scale(0.95);
+}
+
+/* ==================== CONTROLES ==================== */
+.audio_controls {
+  background: var(--wb);
+  border-radius: 1.2vh;
+  padding: 1.5vh 2vh;
+  box-shadow: 0 0.5vh 1.5vh rgba(0,0,0,0.1);
+  border: 0.15vh solid var(--bg5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+  backdrop-filter: blur(10px);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(2vh); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.controls_progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vh;
+}
+
+/* ==================== BARRA DE PROGRESO ==================== */
+.progress_bar_container {
+  width: 100%;
+  height: 1.2vh;
+  cursor: pointer;
+  position: relative;
+  padding: 0.2vh 0;
+}
+
+.progress_bar_bg {
+  width: 100%;
+  height: 0.8vh;
+  background: var(--bg);
+  border-radius: 1vh;
+  overflow: hidden;
+  transition: all var(--tr_f);
+  box-shadow: inset 0 0.2vh 0.5vh rgba(0,0,0,0.15);
+}
+
+.progress_bar_container:hover .progress_bar_bg {
+  height: 1vh;
+}
+
+.progress_bar_fill {
+  height: 100%;
+  width: 0;
+  background: var(--mco);
+  border-radius: 1vh;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 1vh var(--mco);
+  position: relative;
+}
+
+.progress_bar_fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5vh;
+  height: 1.5vh;
+  background: var(--F);
+  border-radius: 50%;
+  box-shadow: 0 0.3vh 1vh rgba(0,0,0,0.3),
+              0 0 1.5vh var(--mco);
+  opacity: 0;
+  transition: opacity var(--tr_f);
+}
+
+.progress_bar_container:hover .progress_bar_fill::after {
+  opacity: 1;
+}
+
+.progress_time {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fz_s4);
+  color: var(--tx);
+  font-weight: 600;
+}
+
+/* ==================== CONTROLES CENTRADOS ==================== */
+.controls_main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5vh;
+}
+
+.btn_control {
+  width: 4.8vh;
+  height: 4.8vh;
+  border: none;
+  border-radius: 0.8vh;
+  background: var(--bg3);
+  color: var(--tx);
+  font-size: var(--fz_m3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--tr_f);
+  box-shadow: 0 0.3vh 0.8vh rgba(0,0,0,0.15);
+  border: 0.1vh solid var(--bg5);
+}
+
+.btn_control:hover {
+  background: var(--mco);
+  color: var(--txa);
+  transform: translateY(-0.3vh);
+  box-shadow: 0 0.6vh 1.5vh rgba(0,0,0,0.25);
+}
+
+.btn_control:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn_control.active {
+  background: var(--mco);
+  color: var(--txa);
+}
+
+/* ==================== CONTROL DE VOLUMEN ==================== */
+.volume_control {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  padding: 0.8vh 1.5vh;
+  background: var(--bg1);
+  border-radius: 0.8vh;
+  border: 0.1vh solid var(--bg5);
+}
+
+.volume_bar_container {
+  width: 10vh;
+  height: 1vh;
+  cursor: pointer;
+  position: relative;
+}
+
+.volume_bar_bg {
+  width: 100%;
+  height: 0.6vh;
+  background: var(--bg);
+  border-radius: 0.5vh;
+  overflow: hidden;
+  transition: all var(--tr_f);
+  box-shadow: inset 0 0.1vh 0.3vh rgba(0,0,0,0.15);
+}
+
+.volume_bar_container:hover .volume_bar_bg {
+  height: 0.8vh;
+}
+
+.volume_bar_fill {
+  height: 100%;
+  width: 70%;
+  background: var(--mco);
+  border-radius: 0.5vh;
+  transition: width 0.1s ease;
+  box-shadow: 0 0 0.8vh var(--mco);
+  position: relative;
+}
+
+.volume_bar_fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.2vh;
+  height: 1.2vh;
+  background: var(--F);
+  border-radius: 50%;
+  box-shadow: 0 0.2vh 0.8vh rgba(0,0,0,0.3),
+              0 0 1vh var(--mco);
+  opacity: 0;
+  transition: opacity var(--tr_f);
+}
+
+.volume_bar_container:hover .volume_bar_fill::after {
+  opacity: 1;
+}
+
+/* ==================== RIGHT COLUMN ==================== */
+.audio_right {
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  background: var(--wb);
+  border-radius: 1.2vh;
+  border: 0.15vh solid var(--bg5);
+  box-shadow: 0 0.5vh 1.5vh rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.list_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5vh 2vh;
+  background: var(--bg1);
+  border-bottom: 0.15vh solid var(--bg5);
+  box-shadow: 0 0.2vh 0.8vh rgba(0,0,0,0.05);
+}
+
+.list_header h3 {
+  font-size: var(--fz_m4);
+  font-weight: 700;
+  color: var(--tx);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+}
+
+.list_header h3 i {
+  color: var(--mco);
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.list_actions {
+  display: flex;
+  gap: 0.8vh;
+}
+
+.btn_icon {
+  width: 4vh;
+  height: 4vh;
+  border: none;
+  border-radius: 0.8vh;
+  background: var(--bg3);
+  color: var(--tx);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_m3);
+  transition: all var(--tr_f);
+  box-shadow: 0 0.3vh 0.8vh rgba(0,0,0,0.15);
+  border: 0.1vh solid var(--bg5);
+}
+
+.btn_icon:hover {
+  transform: translateY(-0.3vh) scale(1.08);
+  box-shadow: 0 0.6vh 1.5vh rgba(0,0,0,0.25);
+}
+
+.btn_icon:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn_add {
+  background: var(--mco);
+  color: var(--txa);
+}
+
+.btn_add:hover {
+  background: var(--bg2);
+}
+
+.btn_clear_all {
+  background: var(--error);
+  color: var(--F);
+}
+
+.btn_clear_all:hover {
+  background: #e53e3e;
+}
+
+/* ==================== LISTA DE AUDIOS ==================== */
+.audio_list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1vh;
+}
+
+.audio_list::-webkit-scrollbar {
+  width: 0.8vh;
+}
+
+.audio_list::-webkit-scrollbar-track {
+  background: var(--bg3);
+  border-radius: 0.4vh;
+}
+
+.audio_list::-webkit-scrollbar-thumb {
+  background: var(--mco);
+  border-radius: 0.4vh;
+  transition: background var(--tr_f);
+}
+
+.audio_list::-webkit-scrollbar-thumb:hover {
+  background: var(--bg2);
+}
+
+.list_empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1vh;
+  color: var(--txe);
+  text-align: center;
+  padding: 4vh;
+}
+
+.list_empty i {
+  font-size: 8vh;
+  color: var(--bg5);
+  opacity: 0.5;
+}
+
+.list_empty p {
+  font-size: var(--fz_m3);
+  font-weight: 600;
+  margin: 0;
+}
+
+.list_empty small {
+  font-size: var(--fz_s4);
+  opacity: 0.7;
+}
+
+.audio_item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2vh 1.5vh;
+  background: var(--bg1);
+  border-radius: 0.8vh;
+  margin-bottom: 0.8vh;
+  cursor: pointer;
+  transition: all var(--tr_f);
+  border: 0.1vh solid transparent;
+}
+
+.audio_item:hover {
+  background: var(--bg4);
+  border-color: var(--mco);
+  transform: translateX(0.5vh);
+  box-shadow: 0 0.4vh 1vh rgba(0,0,0,0.1);
+}
+
+.audio_item.active {
+  background: var(--mco);
+  border-color: var(--bg2);
+  box-shadow: 0 0 1.5vh var(--mco);
+}
+
+.audio_item.active .item_info i,
+.audio_item.active .item_name,
+.audio_item.active .item_size {
+  color: var(--txa);
+}
+
+.item_info {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  flex: 1;
+  overflow: hidden;
+}
+
+.item_info i {
+  font-size: var(--fz_m4);
+  color: var(--mco);
+}
+
+.item_text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2vh;
+  overflow: hidden;
+}
+
+.item_name {
+  font-size: var(--fz_m2);
+  font-weight: 600;
+  color: var(--tx);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item_size {
+  font-size: var(--fz_s4);
+  color: var(--txe);
+  font-weight: 500;
+}
+
+.btn_delete {
+  width: 3.5vh;
+  height: 3.5vh;
+  border: none;
+  border-radius: 50%;
+  background: var(--error);
+  color: var(--F);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_m2);
+  transition: all var(--tr_f);
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.audio_item:hover .btn_delete {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.btn_delete:hover {
+  background: #e53e3e;
+  transform: scale(1.15);
+}
+
+.btn_delete:active {
+  transform: scale(0.9);
+}
+
+/* ==================== UTILIDADES ==================== */
+.dpn {
+  display: none !important;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .audio_layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    height: auto;
+    gap: 2vh;
+  }
+
+  .audio_left {
+    min-height: 50vh;
+  }
+
+  .audio_right {
+    min-height: 30vh;
+  }
+
+  .controls_main {
+    flex-wrap: wrap;
+    gap: 1vh;
+  }
+
+  .volume_control {
+    flex: 1;
+    min-width: 100%;
+  }
+
+  .volume_bar_container {
+    flex: 1;
+  }
+
+  #audioWaves {
+    height: 30vh;
+  }
+}
