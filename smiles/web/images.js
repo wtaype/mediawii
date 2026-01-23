@@ -1,70 +1,65 @@
 import './images.css';
-import jQuery from 'jquery';
-import { Notificacion, abrirModal, cerrarModal, wicopy } from '../widev.js';
+import $ from 'jquery';
+import { Notificacion, abrirModal, cerrarModal } from '../widev.js';
 
 export const render = () => `
   <div class="image_container">
     <div class="image_layout">
-      <!-- LEFT: Visor de Imagen -->
       <div class="image_left">
         <div class="image_zone" id="imageZone">
           <div class="image_placeholder">
             <i class="fas fa-images"></i>
             <h2>Arrastra tus imágenes aquí</h2>
             <p>o <strong>haz doble clic</strong> para seleccionar</p>
-            <p class="upload_hint">Soporta: <kbd>JPG</kbd> <kbd>PNG</kbd> <kbd>GIF</kbd> <kbd>WebP</kbd> <kbd>SVG</kbd></p>
+            <p class="upload_hint">
+              <kbd>JPG</kbd> <kbd>PNG</kbd> <kbd>GIF</kbd> <kbd>WebP</kbd> <kbd>SVG</kbd>
+            </p>
+            <p class="paste_hint">
+              <i class="fas fa-paste"></i> <kbd>Ctrl+V</kbd> para pegar capturas
+            </p>
           </div>
           
           <div class="image_viewer dpn">
-            <img id="mainImage" alt="Imagen principal">
+            <img id="mainImage" alt="Imagen">
             <div class="image_overlay">
-              <button class="btn_zoom_in" title="Acercar"><i class="fas fa-search-plus"></i></button>
-              <button class="btn_zoom_out" title="Alejar"><i class="fas fa-search-minus"></i></button>
+              <button class="btn_zoom_in" title="Zoom +"><i class="fas fa-plus"></i></button>
+              <button class="btn_zoom_out" title="Zoom -"><i class="fas fa-minus"></i></button>
+              <button class="btn_zoom_reset" title="Reset"><i class="fas fa-compress"></i></button>
             </div>
           </div>
         </div>
 
-        <!-- Info y Controles -->
         <div class="image_info dpn">
           <div class="info_left">
-            <span class="image_name">Sin imagen</span>
-            <span class="image_dimensions">0 x 0</span>
+            <span class="image_name"></span>
+            <span class="image_dimensions"></span>
           </div>
           <div class="info_controls">
             <button class="btn_control btn_prev" title="Anterior (←)"><i class="fas fa-chevron-left"></i></button>
             <button class="btn_control btn_download" title="Descargar"><i class="fas fa-download"></i></button>
             <button class="btn_control btn_slideshow" title="Slideshow"><i class="fas fa-play"></i></button>
-            <button class="btn_control btn_fullscreen" title="Pantalla completa (F)"><i class="fas fa-expand"></i></button>
+            <button class="btn_control btn_fullscreen" title="Fullscreen (F)"><i class="fas fa-expand"></i></button>
             <button class="btn_control btn_next" title="Siguiente (→)"><i class="fas fa-chevron-right"></i></button>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT: Galería de miniaturas -->
       <div class="image_right">
         <div class="gallery_header">
-          <h3><i class="fas fa-image"></i> Galería</h3>
+          <h3><i class="fas fa-images"></i> Galería (<span id="imgCount">0</span>)</h3>
           <div class="gallery_actions">
-            <button class="btn_icon btn_add" title="Agregar imágenes"><i class="fas fa-plus"></i></button>
-            <button class="btn_icon btn_clear_all" title="Limpiar todo"><i class="fas fa-trash-alt"></i></button>
+            <button class="btn_icon btn_add" title="Agregar"><i class="fas fa-plus"></i></button>
+            <button class="btn_icon btn_clear" title="Limpiar"><i class="fas fa-trash"></i></button>
           </div>
         </div>
-        
-        <div class="image_gallery" id="imageGallery">
-          <div class="gallery_empty">
-            <i class="fas fa-folder-open"></i>
-            <p>No hay imágenes</p>
-            <small>Arrastra o agrega imágenes</small>
-          </div>
-        </div>
+        <div class="image_gallery" id="imageGallery"></div>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Slideshow -->
   <div class="wiModal" id="slideshowModal">
-    <div class="modalBody" style="max-width: 95vw; max-height: 95vh; padding: 0; background: var(--0);">
-      <button class="modalX" onclick="window.cerrarModal('slideshowModal')"><i class="fas fa-times"></i></button>
+    <div class="modalBody" style="max-width:95vw;max-height:95vh;padding:0;background:var(--0)">
+      <button class="modalX"><i class="fas fa-times"></i></button>
       <div class="slideshow_container">
         <img id="slideshowImage" alt="Slideshow">
         <div class="slideshow_controls">
@@ -72,191 +67,163 @@ export const render = () => `
           <button class="btn_slide_play"><i class="fas fa-pause"></i></button>
           <button class="btn_slide_next"><i class="fas fa-chevron-right"></i></button>
         </div>
-        <div class="slideshow_counter">
-          <span id="slideCounter">1 / 1</span>
-        </div>
+        <div class="slideshow_counter" id="slideCounter">1 / 1</div>
       </div>
     </div>
   </div>
 `;
 
-// ==================== VARIABLES GLOBALES ====================
-const $ = jQuery;
+// Variables
 let images = [];
 let currentIndex = 0;
 let zoomLevel = 1;
 let slideshowInterval = null;
-const FORMATOS_VALIDOS = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-const ZOOM_STEP = 0.2;
+let pasteCount = 1;
+
+const FORMATOS = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+const ZOOM_STEP = 0.25;
 const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 3;
-const SLIDESHOW_DELAY = 180000;
+const MAX_ZOOM = 5;
+const SLIDESHOW_DELAY = 3000;
 
-// ==================== UTILIDADES ====================
-const formatearTamaño = (bytes) => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+// Utilidades
+const bytes = (b) => {
+  if (!b) return '0 B';
+  const k = 1024, s = ['B', 'KB', 'MB'], i = Math.floor(Math.log(b) / Math.log(k));
+  return `${(b / Math.pow(k, i)).toFixed(1)} ${s[i]}`;
 };
 
-const obtenerDimensiones = (img, callback) => {
-  const tempImg = new Image();
-  tempImg.onload = () => callback(tempImg.width, tempImg.height);
-  tempImg.src = img.src;
+const getDim = (img, cb) => {
+  const i = new Image();
+  i.onload = () => cb(i.width, i.height);
+  i.src = img.src;
 };
 
-// ==================== GALERÍA ====================
-const actualizarGaleria = () => {
-  const galeria = $('#imageGallery');
+// Galería
+const updateGallery = () => {
+  const g = $('#imageGallery');
+  $('#imgCount').text(images.length);
   
-  if (images.length === 0) {
-    galeria.html(`
-      <div class="gallery_empty">
-        <i class="fas fa-folder-open"></i>
-        <p>No hay imágenes</p>
-        <small>Arrastra o agrega imágenes</small>
-      </div>
-    `);
+  if (!images.length) {
+    g.html('<div class="gallery_empty"><i class="fas fa-folder-open"></i><p>Sin imágenes</p></div>');
     return;
   }
   
-  const html = images.map((img, index) => `
-    <div class="gallery_item ${index === currentIndex ? 'active' : ''}" data-index="${index}">
+  g.html(images.map((img, i) => `
+    <div class="gallery_item ${i === currentIndex ? 'active' : ''}" data-i="${i}">
       <img src="${img.url}" alt="${img.name}">
-      <div class="item_overlay">
-        <span class="item_name">${img.name}</span>
-        <button class="btn_delete_mini" data-index="${index}" title="Eliminar">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+      ${img.pasted ? '<span class="paste_badge"><i class="fas fa-paste"></i></span>' : ''}
+      <button class="btn_del" data-i="${i}"><i class="fas fa-times"></i></button>
     </div>
-  `).join('');
-  
-  galeria.html(html);
+  `).join(''));
 };
 
-// ==================== PROCESAR IMÁGENES ====================
-const agregarImagenes = (archivos) => {
-  const archivosArray = Array.from(archivos);
-  let agregados = 0;
-  
-  archivosArray.forEach(archivo => {
-    if (!FORMATOS_VALIDOS.includes(archivo.type)) {
-      Notificacion(`${archivo.name} no es un formato válido`, 'error', 2000);
-      return;
-    }
-    
-    const url = URL.createObjectURL(archivo);
-    images.push({ name: archivo.name, size: archivo.size, url, type: archivo.type });
-    agregados++;
+// Agregar imágenes
+const addImages = (files, pasted = false) => {
+  let added = 0;
+  Array.from(files).forEach(f => {
+    if (!FORMATOS.includes(f.type)) return;
+    images.push({ name: f.name, size: f.size, url: URL.createObjectURL(f), pasted });
+    added++;
   });
   
-  if (agregados > 0) {
-    Notificacion(`${agregados} imagen${agregados > 1 ? 'es' : ''} agregada${agregados > 1 ? 's' : ''}`, 'success', 2000);
-    actualizarGaleria();
-    
-    if (images.length === agregados) {
-      mostrarImagen(0);
-    }
+  if (added) {
+    Notificacion(pasted ? 'Captura pegada' : `${added} imagen${added > 1 ? 'es' : ''} agregada${added > 1 ? 's' : ''}`, 'success', 1500);
+    updateGallery();
+    if (images.length === added || pasted) showImage(pasted ? images.length - 1 : 0);
   }
 };
 
-// ==================== VISOR ====================
-const mostrarImagen = (index) => {
-  if (index < 0 || index >= images.length) return;
+// ✅ PASTE CORREGIDO (Win+Shift+S + Ctrl+V)
+const handlePaste = (e) => {
+  // ✅ CLAVE: Usar e.originalEvent.clipboardData (evento nativo)
+  const items = e.originalEvent?.clipboardData?.items;
+  if (!items) return;
   
-  currentIndex = index;
+  let found = false;
+  $.each(items, (i, item) => {
+    // ✅ Verificar si es imagen
+    if (item.type.startsWith('image/')) {
+      const blob = item.getAsFile();
+      if (blob) {
+        const file = new File([blob], `Captura_${pasteCount++}.png`, { type: blob.type });
+        addImages([file], true);
+        found = true;
+        
+        // Animación flash
+        $('#imageZone').addClass('paste_flash');
+        setTimeout(() => $('#imageZone').removeClass('paste_flash'), 300);
+        
+        return false; // Detener loop
+      }
+    }
+  });
+  
+  if (!found) Notificacion('No se detectó imagen en portapapeles', 'error', 2000);
+};
+
+// Mostrar imagen
+const showImage = (i) => {
+  if (i < 0 || i >= images.length) return;
+  currentIndex = i;
   zoomLevel = 1;
   
-  const imgData = images[index];
-  const mainImg = $('#mainImage');
+  const img = images[i];
+  const $img = $('#mainImage');
   
   $('.image_placeholder').addClass('dpn');
-  $('.image_viewer').removeClass('dpn');
-  $('.image_info').removeClass('dpn');
-  $('#imageZone').addClass('viewing');
+  $('.image_viewer, .image_info').removeClass('dpn');
   
-  mainImg[0].src = imgData.url;
-  mainImg.css('transform', 'scale(1)');
+  $img[0].src = img.url;
+  $img.css('transform', 'scale(1)');
   
-  $('.image_name').text(imgData.name);
-  
-  obtenerDimensiones(mainImg[0], (w, h) => {
-    $('.image_dimensions').text(`${w} x ${h} px · ${formatearTamaño(imgData.size)}`);
+  $('.image_name').text(img.name);
+  getDim($img[0], (w, h) => {
+    $('.image_dimensions').text(`${w}×${h} · ${bytes(img.size)}${img.pasted ? ' · Pegada' : ''}`);
   });
   
-  actualizarGaleria();
+  updateGallery();
 };
 
-const aplicarZoom = (direccion) => {
-  if (direccion === 'in' && zoomLevel < MAX_ZOOM) {
-    zoomLevel += ZOOM_STEP;
-  } else if (direccion === 'out' && zoomLevel > MIN_ZOOM) {
-    zoomLevel -= ZOOM_STEP;
-  }
-  
-  zoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel));
+// Zoom
+const zoom = (dir) => {
+  if (dir === 'in') zoomLevel = Math.min(zoomLevel + ZOOM_STEP, MAX_ZOOM);
+  else if (dir === 'out') zoomLevel = Math.max(zoomLevel - ZOOM_STEP, MIN_ZOOM);
+  else zoomLevel = 1;
   $('#mainImage').css('transform', `scale(${zoomLevel})`);
 };
 
-const siguienteImagen = () => {
-  if (currentIndex < images.length - 1) {
-    mostrarImagen(currentIndex + 1);
-  } else {
-    mostrarImagen(0);
-  }
-};
+// Navegación
+const next = () => showImage(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
+const prev = () => showImage(currentIndex > 0 ? currentIndex - 1 : images.length - 1);
 
-const anteriorImagen = () => {
-  if (currentIndex > 0) {
-    mostrarImagen(currentIndex - 1);
-  } else {
-    mostrarImagen(images.length - 1);
-  }
-};
-
-const descargarImagen = () => {
-  if (images.length === 0) return;
-  
-  const img = images[currentIndex];
+// Descargar
+const download = () => {
+  if (!images.length) return;
   const a = document.createElement('a');
-  a.href = img.url;
-  a.download = img.name;
+  a.href = images[currentIndex].url;
+  a.download = images[currentIndex].name;
   a.click();
-  
-  Notificacion('Imagen descargada', 'success', 1500);
+  Notificacion('Descargada', 'success', 1500);
 };
 
-const toggleFullscreen = () => {
-  const viewer = $('.image_viewer')[0];
-  
-  if (!document.fullscreenElement) {
-    viewer.requestFullscreen().catch(() => {
-      Notificacion('Pantalla completa no disponible', 'error', 2000);
-    });
-  } else {
-    document.exitFullscreen();
-  }
+// Fullscreen
+const fullscreen = () => {
+  const el = $('.image_viewer')[0];
+  if (!document.fullscreenElement) el.requestFullscreen().catch(() => {});
+  else document.exitFullscreen();
 };
 
-// ==================== SLIDESHOW ====================
-const iniciarSlideshow = () => {
-  if (images.length === 0) return;
-  
+// Slideshow
+const startSlideshow = () => {
+  if (!images.length) return;
   abrirModal('slideshowModal');
-  actualizarSlide();
-  
-  slideshowInterval = setInterval(() => {
-    siguienteImagen();
-    actualizarSlide();
-  }, SLIDESHOW_DELAY);
-  
+  updateSlide();
+  slideshowInterval = setInterval(() => { next(); updateSlide(); }, SLIDESHOW_DELAY);
   $('.btn_slide_play').html('<i class="fas fa-pause"></i>');
 };
 
-const detenerSlideshow = () => {
+const stopSlideshow = () => {
   if (slideshowInterval) {
     clearInterval(slideshowInterval);
     slideshowInterval = null;
@@ -265,211 +232,142 @@ const detenerSlideshow = () => {
 };
 
 const toggleSlideshow = () => {
-  if (slideshowInterval) {
-    detenerSlideshow();
-  } else {
-    slideshowInterval = setInterval(() => {
-      siguienteImagen();
-      actualizarSlide();
-    }, SLIDESHOW_DELAY);
+  if (slideshowInterval) stopSlideshow();
+  else {
+    slideshowInterval = setInterval(() => { next(); updateSlide(); }, SLIDESHOW_DELAY);
     $('.btn_slide_play').html('<i class="fas fa-pause"></i>');
   }
 };
 
-const actualizarSlide = () => {
-  if (images.length === 0) return;
-  
-  const img = images[currentIndex];
-  $('#slideshowImage')[0].src = img.url;
+const updateSlide = () => {
+  if (!images.length) return;
+  $('#slideshowImage')[0].src = images[currentIndex].url;
   $('#slideCounter').text(`${currentIndex + 1} / ${images.length}`);
 };
 
-// ==================== EVENTOS DE CARGA ====================
-const abrirSelector = () => {
-  const entrada = $('<input type="file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml" multiple style="display:none;">');
-  
-  entrada.on('change', function() {
-    if (this.files.length > 0) {
-      agregarImagenes(this.files);
-    }
-    entrada.remove();
+// Selector de archivos
+const openFile = () => {
+  const input = $('<input type="file" accept="image/*" multiple style="display:none">');
+  input.on('change', function() {
+    if (this.files.length) addImages(this.files);
+    input.remove();
   });
-  
-  $('body').append(entrada);
-  entrada.click();
+  $('body').append(input);
+  input.click();
 };
 
-const manejarDragOver = (e) => {
-  e.preventDefault();
-  $('#imageZone').addClass('dragover');
-};
-
-const manejarDragLeave = () => {
-  $('#imageZone').removeClass('dragover');
-};
-
-const manejarDrop = (e) => {
-  e.preventDefault();
-  $('#imageZone').removeClass('dragover');
-  
-  const archivos = e.originalEvent.dataTransfer?.files;
-  if (archivos?.length) {
-    agregarImagenes(archivos);
-  }
-};
-
-// ==================== INICIALIZACIÓN ====================
+// Init
 export const init = () => {
-  // Exponer cerrarModal globalmente para el modal
-  window.cerrarModal = cerrarModal;
-  
-  // Eventos de zona de carga
+  // ✅ DOBLE CLIC para abrir selector (no click simple)
   $('#imageZone')
-    .on('dblclick', abrirSelector)
-    .on('dragover', manejarDragOver)
-    .on('dragleave', manejarDragLeave)
-    .on('drop', manejarDrop);
+    .on('dblclick', openFile)
+    .on('dragover', (e) => { 
+      e.preventDefault(); 
+      $('#imageZone').addClass('dragover'); 
+    })
+    .on('dragleave', () => $('#imageZone').removeClass('dragover'))
+    .on('drop', (e) => {
+      e.preventDefault();
+      $('#imageZone').removeClass('dragover');
+      // ✅ Drag & Drop con e.originalEvent
+      if (e.originalEvent.dataTransfer?.files.length) {
+        addImages(e.originalEvent.dataTransfer.files);
+      }
+    });
   
-  // Eventos de controles
-  $('.btn_prev').on('click', anteriorImagen);
-  $('.btn_next').on('click', siguienteImagen);
-  $('.btn_zoom_in').on('click', () => aplicarZoom('in'));
-  $('.btn_zoom_out').on('click', () => aplicarZoom('out'));
-  $('.btn_download').on('click', descargarImagen);
-  $('.btn_fullscreen').on('click', toggleFullscreen);
-  $('.btn_slideshow').on('click', iniciarSlideshow);
+  // Controles
+  $('.btn_prev').on('click', prev);
+  $('.btn_next').on('click', next);
+  $('.btn_zoom_in').on('click', () => zoom('in'));
+  $('.btn_zoom_out').on('click', () => zoom('out'));
+  $('.btn_zoom_reset').on('click', () => zoom('reset'));
+  $('.btn_download').on('click', download);
+  $('.btn_fullscreen').on('click', fullscreen);
+  $('.btn_slideshow').on('click', startSlideshow);
   
   // Zoom con scroll
   $('#mainImage').on('wheel', (e) => {
     e.preventDefault();
-    if (e.originalEvent.deltaY < 0) {
-      aplicarZoom('in');
-    } else {
-      aplicarZoom('out');
-    }
+    zoom(e.originalEvent.deltaY < 0 ? 'in' : 'out');
   });
   
-  // Eventos de galería
+  // Galería
   $(document).on('click', '.gallery_item', function() {
-    const index = parseInt($(this).data('index'));
-    mostrarImagen(index);
+    showImage(parseInt($(this).data('i')));
   });
   
-  $(document).on('click', '.btn_delete_mini', function(e) {
+  $(document).on('click', '.btn_del', function(e) {
     e.stopPropagation();
-    const index = parseInt($(this).data('index'));
+    const i = parseInt($(this).data('i'));
+    URL.revokeObjectURL(images[i].url);
+    images.splice(i, 1);
     
-    URL.revokeObjectURL(images[index].url);
-    images.splice(index, 1);
-    
-    if (index === currentIndex && images.length > 0) {
-      currentIndex = Math.min(index, images.length - 1);
-      mostrarImagen(currentIndex);
-    } else if (images.length === 0) {
-      $('.image_viewer').addClass('dpn');
+    if (images.length) {
+      if (i === currentIndex) showImage(Math.min(i, images.length - 1));
+      else if (i < currentIndex) currentIndex--;
+    } else {
+      $('.image_viewer, .image_info').addClass('dpn');
       $('.image_placeholder').removeClass('dpn');
-      $('.image_info').addClass('dpn');
-      $('#imageZone').removeClass('viewing');
-    } else if (index < currentIndex) {
-      currentIndex--;
     }
-    
-    actualizarGaleria();
-    Notificacion('Imagen eliminada', 'success', 1500);
+    updateGallery();
   });
   
-  // Botones de acciones
-  $('.btn_add').on('click', abrirSelector);
-  
-  $('.btn_clear_all').on('click', () => {
-    if (images.length === 0) return;
-    
-    images.forEach(img => URL.revokeObjectURL(img.url));
+  // Botones
+  $('.btn_add').on('click', openFile);
+  $('.btn_clear').on('click', () => {
+    if (!images.length) return;
+    images.forEach(i => URL.revokeObjectURL(i.url));
     images = [];
     currentIndex = 0;
-    
-    $('.image_viewer').addClass('dpn');
+    pasteCount = 1;
+    $('.image_viewer, .image_info').addClass('dpn');
     $('.image_placeholder').removeClass('dpn');
-    $('.image_info').addClass('dpn');
-    $('#imageZone').removeClass('viewing');
-    
-    actualizarGaleria();
-    Notificacion('Todas las imágenes eliminadas', 'success', 2000);
+    updateGallery();
+    Notificacion('Galería limpiada', 'success', 1500);
   });
   
-  // Controles de slideshow
-  $('.btn_slide_prev').on('click', () => {
-    anteriorImagen();
-    actualizarSlide();
-  });
-  
-  $('.btn_slide_next').on('click', () => {
-    siguienteImagen();
-    actualizarSlide();
-  });
-  
+  // Slideshow
+  $('.btn_slide_prev').on('click', () => { prev(); updateSlide(); });
+  $('.btn_slide_next').on('click', () => { next(); updateSlide(); });
   $('.btn_slide_play').on('click', toggleSlideshow);
   
-  // Cerrar slideshow
-  $('#slideshowModal').on('click', function(e) {
-    if (e.target === this) {
-      detenerSlideshow();
+  $('.modalX').on('click', () => {
+    stopSlideshow();
+    cerrarModal('slideshowModal');
+  });
+  
+  // ✅ PASTE GLOBAL (Ctrl+V)
+  $(document).on('paste', handlePaste);
+  
+  // Teclado
+  $(document).on('keydown', (e) => {
+    if (!images.length) return;
+    
+    const k = e.key;
+    if (k === 'ArrowLeft') { prev(); if ($('#slideshowModal').hasClass('active')) updateSlide(); }
+    else if (k === 'ArrowRight') { next(); if ($('#slideshowModal').hasClass('active')) updateSlide(); }
+    else if (k === '+' || k === '=') zoom('in');
+    else if (k === '-') zoom('out');
+    else if (k === '0') zoom('reset');
+    else if (k === 'f' || k === 'F') fullscreen();
+    else if (k === 'Escape' && $('#slideshowModal').hasClass('active')) {
+      stopSlideshow();
       cerrarModal('slideshowModal');
     }
   });
   
-  // Teclas de acceso rápido
-  $(document).on('keydown', (e) => {
-    if (images.length === 0) return;
-    
-    switch(e.key) {
-      case 'ArrowLeft':
-        anteriorImagen();
-        if ($('#slideshowModal').hasClass('active')) actualizarSlide();
-        break;
-      case 'ArrowRight':
-        siguienteImagen();
-        if ($('#slideshowModal').hasClass('active')) actualizarSlide();
-        break;
-      case '+':
-      case '=':
-        aplicarZoom('in');
-        break;
-      case '-':
-        aplicarZoom('out');
-        break;
-      case 'f':
-      case 'F':
-        if (!$('#slideshowModal').hasClass('active')) {
-          toggleFullscreen();
-        }
-        break;
-      case 'Escape':
-        if ($('#slideshowModal').hasClass('active')) {
-          detenerSlideshow();
-          cerrarModal('slideshowModal');
-        }
-        break;
-    }
-  });
-  
-  console.log('✅ Visor de imágenes cargado');
+  console.log('✅ Visor de imágenes con Paste perfecto cargado');
 };
 
-// ==================== LIMPIEZA ====================
+// Cleanup
 export const cleanup = () => {
-  $('#imageZone, .btn_prev, .btn_next, .btn_zoom_in, .btn_zoom_out, .btn_download, .btn_fullscreen, .btn_slideshow, .btn_add, .btn_clear_all, .btn_slide_prev, .btn_slide_next, .btn_slide_play, #slideshowModal, #mainImage').off();
-  
+  $('#imageZone, .btn_prev, .btn_next, .btn_zoom_in, .btn_zoom_out, .btn_zoom_reset, .btn_download, .btn_fullscreen, .btn_slideshow, .btn_add, .btn_clear, .modalX, #mainImage').off();
   $(document).off('click', '.gallery_item');
-  $(document).off('click', '.btn_delete_mini');
+  $(document).off('click', '.btn_del');
+  $(document).off('paste');
   $(document).off('keydown');
-  
-  detenerSlideshow();
-  
-  images.forEach(img => URL.revokeObjectURL(img.url));
+  stopSlideshow();
+  images.forEach(i => URL.revokeObjectURL(i.url));
   images = [];
-  
-  delete window.cerrarModal;
-  
-  console.log('🧹 Visor de imágenes limpiado');
+  console.log('🧹 Visor limpiado');
 };

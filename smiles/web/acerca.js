@@ -105,7 +105,7 @@ export const render = () => `
           <ul class="tech_list">
             <li><i class="fas fa-check"></i> MP4, WebM, OGG</li>
             <li><i class="fas fa-check"></i> Controles avanzados</li>
-            <li><i class="fas fa-check"></i> Velocidad ajustable (0.25x - 2x)</li>
+            <li><i class="fas fa-check"></i> Velocidad ajustable (0.25x - 3x)</li>
             <li><i class="fas fa-check"></i> Picture in Picture</li>
           </ul>
         </div>
@@ -116,8 +116,8 @@ export const render = () => `
           </div>
           <ul class="tech_list">
             <li><i class="fas fa-check"></i> MP3, WAV, OGG, M4A</li>
-            <li><i class="fas fa-check"></i> Web Audio API</li>
-            <li><i class="fas fa-check"></i> Visualización de ondas</li>
+            <li><i class="fas fa-check"></i> Web Audio API optimizada</li>
+            <li><i class="fas fa-check"></i> Visualización de ondas en tiempo real</li>
             <li><i class="fas fa-check"></i> Modo aleatorio y loop</li>
           </ul>
         </div>
@@ -128,9 +128,9 @@ export const render = () => `
           </div>
           <ul class="tech_list">
             <li><i class="fas fa-check"></i> JPG, PNG, GIF, WebP, SVG</li>
-            <li><i class="fas fa-check"></i> Zoom con scroll</li>
+            <li><i class="fas fa-check"></i> Zoom con scroll (0.5x - 5x)</li>
             <li><i class="fas fa-check"></i> Slideshow configurable</li>
-            <li><i class="fas fa-check"></i> Galería de miniaturas</li>
+            <li><i class="fas fa-check"></i> Soporte Ctrl+V (paste)</li>
           </ul>
         </div>
       </div>
@@ -148,10 +148,9 @@ export const render = () => `
           </div>
           <ul class="shortcuts_list">
             <li><kbd>Espacio</kbd> Play / Pause</li>
-            <li><kbd>←</kbd> <kbd>→</kbd> Retroceder / Adelantar 5s</li>
-            <li><kbd>↑</kbd> <kbd>↓</kbd> Subir / Bajar volumen</li>
+            <li><kbd>←</kbd> <kbd>→</kbd> Anterior / Siguiente</li>
             <li><kbd>F</kbd> Pantalla completa</li>
-            <li><kbd>M</kbd> Silenciar</li>
+            <li><kbd>Doble Click</kbd> Abrir archivos</li>
           </ul>
         </div>
         <div class="shortcut_card">
@@ -162,8 +161,8 @@ export const render = () => `
           <ul class="shortcuts_list">
             <li><kbd>Espacio</kbd> Play / Pause</li>
             <li><kbd>←</kbd> <kbd>→</kbd> Anterior / Siguiente</li>
-            <li><kbd>↑</kbd> <kbd>↓</kbd> Subir / Bajar volumen</li>
-            <li><kbd>+</kbd> <kbd>-</kbd> Zoom in / out</li>
+            <li><kbd>F</kbd> Pantalla completa</li>
+            <li><kbd>Doble Click</kbd> Abrir archivos</li>
           </ul>
         </div>
         <div class="shortcut_card">
@@ -173,9 +172,11 @@ export const render = () => `
           </div>
           <ul class="shortcuts_list">
             <li><kbd>←</kbd> <kbd>→</kbd> Anterior / Siguiente</li>
-            <li><kbd>+</kbd> <kbd>-</kbd> Acercar / Alejar</li>
+            <li><kbd>+</kbd> <kbd>=</kbd> Acercar</li>
+            <li><kbd>-</kbd> Alejar</li>
+            <li><kbd>0</kbd> Resetear zoom</li>
             <li><kbd>F</kbd> Pantalla completa</li>
-            <li><kbd>Esc</kbd> Cerrar slideshow</li>
+            <li><kbd>Ctrl+V</kbd> Pegar captura</li>
           </ul>
         </div>
       </div>
@@ -186,22 +187,54 @@ export const render = () => `
         <i class="fas fa-history"></i> Historial de Versiones
       </h2>
       <div class="version_timeline">
+        
         <div class="version_item">
-          <div class="version_badge current">${version}</div>
+          <div class="version_badge current">v11</div>
           <div class="version_content">
-            <h3>Versión ${version} - Lanzamiento Multimedia</h3>
-            <p class="version_date"><i class="far fa-calendar"></i> Enero 2026</p>
+            <h3>Versión 11 - Optimización y Compactación</h3>
+            <p class="version_date"><i class="far fa-calendar"></i> Enero 22, 2026</p>
             <ul>
-              <li>🎬 Reproductor de videos con controles profesionales</li>
-              <li>🎵 Reproductor de audios con visualización de ondas (Web Audio API)</li>
-              <li>🖼️ Visor de imágenes con zoom y slideshow</li>
-              <li>🎨 5 temas dinámicos adaptables</li>
-              <li>⌨️ Atajos de teclado completos</li>
-              <li>🔒 100% privacidad local</li>
-              <li>📱 Diseño responsive optimizado</li>
+              <li>⚡ Código compacto y optimizado (reducción de 50% en media.js)</li>
+              <li>🔧 Fix crítico: Web Audio API con conexión única</li>
+              <li>🎯 Eliminado error InvalidStateError al cambiar entre medias</li>
+              <li>🚀 Rendimiento mejorado en reproducción de audios</li>
+              <li>🎨 Sistema inteligente de reutilización de AudioContext</li>
+              <li>✅ Auto-reproducción al hacer click en galería</li>
+              <li>🧹 Limpieza de recursos mejorada en cleanup()</li>
             </ul>
           </div>
         </div>
+
+        <div class="version_item">
+          <div class="version_badge">v10</div>
+          <div class="version_content">
+            <h3>Versión 10 - Lanzamiento Multimedia Profesional</h3>
+            <p class="version_date"><i class="far fa-calendar"></i> Enero 21, 2026</p>
+            <ul>
+              <li>🎬 Reproductor de videos con controles profesionales</li>
+              <li>🎵 Reproductor de audios con visualización de ondas (Web Audio API)</li>
+              <li>🖼️ Visor de imágenes con zoom inteligente y slideshow</li>
+              <li>📋 Soporte Ctrl+V para pegar capturas de pantalla</li>
+              <li>⌨️ Atajos de teclado completos (Espacio, F, +, -, 0, flechas)</li>
+              <li>🎨 Barra de progreso profesional con glow effect</li>
+              <li>🔊 Control de volumen con barra visual</li>
+              <li>📱 Galería de miniaturas con badges dinámicos</li>
+              <li>🎭 Picture in Picture para videos</li>
+              <li>🔄 Velocidad ajustable (0.25x - 3x)</li>
+              <li>♾️ Modo loop para videos y audios</li>
+              <li>💾 Persistencia de sesión con LocalStorage</li>
+              <li>📥 Descarga directa de archivos multimedia</li>
+              <li>🎨 5 temas dinámicos adaptables</li>
+              <li>🔒 100% privacidad local (sin servidores)</li>
+              <li>📱 Diseño responsive optimizado</li>
+              <li>🚀 Drag & Drop para agregar archivos</li>
+              <li>🎯 Sistema de badges (tipo, paste)</li>
+              <li>✨ Animaciones suaves con CSS transitions</li>
+              <li>🧹 Sistema de limpieza automático de recursos</li>
+            </ul>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -230,6 +263,41 @@ export const render = () => `
           </div>
           <h3>Control Total</h3>
           <p>Tú decides qué archivos cargar y puedes eliminarlos cuando quieras. Sin permanencia en servidores.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="acerca_section">
+      <h2 class="section_title">
+        <i class="fas fa-rocket"></i> Próximas Funcionalidades
+      </h2>
+      <div class="roadmap_content">
+        <div class="roadmap_item">
+          <div class="roadmap_icon planned">
+            <i class="fas fa-play-circle"></i>
+          </div>
+          <div class="roadmap_info">
+            <h3>Listas de Reproducción Personalizadas</h3>
+            <p>Crea y guarda tus propias listas de reproducción con nombre y orden personalizado</p>
+          </div>
+        </div>
+        <div class="roadmap_item">
+          <div class="roadmap_icon planned">
+            <i class="fas fa-palette"></i>
+          </div>
+          <div class="roadmap_info">
+            <h3>Editor de Imágenes Básico</h3>
+            <p>Recortar, rotar, ajustar brillo/contraste y aplicar filtros básicos</p>
+          </div>
+        </div>
+        <div class="roadmap_item">
+          <div class="roadmap_icon planned">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <div class="roadmap_info">
+            <h3>Exportar/Importar Sesiones</h3>
+            <p>Guarda y comparte tus sesiones multimedia en archivos JSON</p>
+          </div>
         </div>
       </div>
     </div>

@@ -651,3 +651,92 @@
     grid-template-columns: repeat(auto-fill, minmax(8vh, 1fr));
   }
 }
+
+/* ==================== PASTE BADGE ==================== */
+.paste_badge {
+  position: absolute;
+  top: 0.8vh;
+  right: 0.8vh;
+  background: var(--mco);
+  color: var(--txa);
+  padding: 0.5vh 1vh;
+  border-radius: 6px;
+  font-size: var(--fz_s3);
+  display: flex;
+  align-items: center;
+  gap: 0.5vh;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.paste_hint {
+  font-size: var(--fz_s4);
+  color: var(--mco);
+  font-weight: 600;
+  margin-top: 2vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8vh;
+}
+
+.paste_hint i {
+  font-size: var(--fz_m3);
+}
+
+.paste_flash {
+  animation: pasteFlash 0.3s ease;
+}
+
+@keyframes pasteFlash {
+  0%, 100% {
+    background: var(--bg1);
+  }
+  50% {
+    background: var(--mco);
+  }
+}
+
+/* ==================== SPEED MODAL ==================== */
+.speed_options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vh;
+}
+
+.speed_btn {
+  padding: 1.5vh 2vw;
+  background: var(--bg1);
+  border: 2px solid var(--bg5);
+  border-radius: 0.8vh;
+  color: var(--tx);
+  font-size: var(--fz_m3);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--tr_f);
+  font-family: var(--ff_P);
+  text-align: center;
+}
+
+.speed_btn:hover {
+  background: var(--bg5);
+  border-color: var(--mco);
+  transform: translateX(5px);
+}
+
+.speed_btn.active {
+  background: var(--mco);
+  color: var(--txa);
+  border-color: var(--mco);
+}
+
+.btn_zoom_reset {
+  background: var(--bg5);
+  border: 2px solid var(--bg5);
+}
+
+.btn_zoom_reset:hover {
+  background: var(--mco);
+  border-color: var(--mco);
+  color: var(--txa);
+}
