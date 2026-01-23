@@ -131,17 +131,6 @@
   background: var(--0);
 }
 
-#videoWave {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 150px;
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* AUDIO PLAYER */
 .audio_player {
   background: var(--bg3);
@@ -263,7 +252,7 @@
   font-weight: 500;
 }
 
-/* ==================== TIMELINE PRO (ESTILO VIDEOS.JS) ==================== */
+/* ==================== TIMELINE PRO ==================== */
 .info_timeline {
   display: flex;
   align-items: center;
@@ -444,13 +433,13 @@
   opacity: 1;
 }
 
-/* ==================== RIGHT COLUMN (ADMINISTRADOR) ==================== */
+/* ==================== RIGHT COLUMN (ADMINISTRADOR) ✅ CORREGIDO ==================== */
 .media_right {
   display: flex;
   flex-direction: column;
   background: var(--wb);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: hidden; /* ✅ MANTIENE EL OVERFLOW HIDDEN AQUÍ */
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   border: 0.15vh solid var(--bg5);
 }
@@ -467,6 +456,7 @@
   top: 0;
   z-index: 10;
   box-shadow: 0 0.2vh 0.8vh rgba(0,0,0,0.05);
+  flex-shrink: 0; /* ✅ EVITA QUE SE COMPRIMA */
 }
 
 .gallery_header h3 {
@@ -548,14 +538,15 @@
   color: var(--F);
 }
 
-/* GALLERY */
+/* GALLERY ✅ OPTIMIZADA PARA MUCHOS ARCHIVOS */
 .media_gallery {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden; /* ✅ PREVIENE OVERFLOW HORIZONTAL */
   padding: 2vh;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 1.5vh;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* ✅ CARDS MÁS GRANDES */
+  gap: 2vh; /* ✅ MÁS ESPACIO ENTRE CARDS */
   align-content: start;
 }
 
@@ -602,12 +593,12 @@
   margin: 0;
 }
 
-/* GALLERY ITEMS */
+/* GALLERY ITEMS ✅ OVERFLOW CORREGIDO */
 .gallery_item {
   position: relative;
   background: var(--bg1);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible; /* ✅ CAMBIADO DE HIDDEN A VISIBLE PARA BADGES */
   cursor: pointer;
   transition: all var(--tr_f);
   border: 0.2vh solid transparent;
@@ -623,23 +614,26 @@
   transform: translateY(-0.5vh);
   box-shadow: 0 0.8vh 2vh rgba(0,0,0,0.2);
   border-color: var(--mco);
+  z-index: 5; /* ✅ ELEVA LA CARD AL HOVER */
 }
 
 .gallery_item.active {
   border-color: var(--mco);
   box-shadow: 0 0 1.5vh var(--mco);
+  z-index: 4; /* ✅ MANTIENE CARD ACTIVA VISIBLE */
 }
 
-/* ITEM PREVIEW */
+/* ITEM PREVIEW ✅ OVERFLOW HIDDEN SOLO EN PREVIEW */
 .item_preview {
   position: relative;
   width: 100%;
-  height: 120px;
+  height: 130px; /* ✅ UN POCO MÁS ALTO */
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg4);
-  overflow: hidden;
+  overflow: hidden; /* ✅ OVERFLOW HIDDEN SOLO AQUÍ */
+  border-radius: 10px 10px 0 0; /* ✅ REDONDEO SUPERIOR */
 }
 
 .item_preview img {
@@ -672,10 +666,12 @@
 
 /* ITEM INFO */
 .item_info {
-  padding: 1vh;
+  padding: 1.2vh; /* ✅ MÁS PADDING */
   display: flex;
   flex-direction: column;
-  gap: 0.3vh;
+  gap: 0.4vh;
+  background: var(--bg1); /* ✅ FONDO SÓLIDO */
+  border-radius: 0 0 10px 10px; /* ✅ REDONDEO INFERIOR */
 }
 
 .item_name {
@@ -685,28 +681,36 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3; /* ✅ MEJOR LEGIBILIDAD */
 }
 
 .item_details {
   font-size: var(--fz_s5);
   color: var(--txe);
+  line-height: 1.2;
 }
 
-/* BADGES */
+/* BADGES ✅ POSICIONAMIENTO MEJORADO */
 .type_badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 0.4vh 1vh;
+  top: 6px; /* ✅ MÁS CERCA DEL BORDE */
+  left: 6px;
+  padding: 0.5vh 1vh;
   border-radius: 6px;
-  font-size: var(--fz_s5);
-  font-weight: 600;
+  font-size: 10px; /* ✅ TAMAÑO FIJO PARA CONSISTENCIA */
+  font-weight: 700;
   color: white;
   display: flex;
   align-items: center;
-  gap: 0.5vh;
-  z-index: 2;
+  gap: 0.4vh;
+  z-index: 3; /* ✅ SOBRE LA IMAGEN */
   backdrop-filter: blur(10px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap; /* ✅ NO ROMPE EN VARIAS LÍNEAS */
+}
+
+.type_badge i {
+  font-size: 11px; /* ✅ ICONO PROPORCIONAL */
 }
 
 .type_badge.video {
@@ -721,44 +725,51 @@
   background: linear-gradient(135deg, #0EBEFF, #42d9ff);
 }
 
+/* PASTE BADGE ✅ POSICIONAMIENTO CORREGIDO */
 .paste_badge {
   position: absolute;
-  top: 8px;
-  right: 40px;
-  padding: 0.4vh 1vh;
+  top: 6px;
+  left: 6px; /* ✅ MISMO LEFT QUE TYPE_BADGE */
+  transform: translateY(28px); /* ✅ DEBAJO DEL TYPE_BADGE */
+  padding: 0.5vh 1vh;
   border-radius: 6px;
   background: linear-gradient(135deg, #ffa726, #ffb74d);
   color: white;
-  font-size: var(--fz_s5);
-  font-weight: 600;
-  z-index: 2;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 3;
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
-  gap: 0.5vh;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  gap: 0.4vh;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
 }
 
-/* BOTÓN DELETE MINI (TOP RIGHT) */
+.paste_badge i {
+  font-size: 11px;
+}
+
+/* BOTÓN DELETE MINI ✅ POSICIONAMIENTO CORREGIDO */
 .btn_del_mini {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 3vh;
-  height: 3vh;
+  top: 6px;
+  right: 6px;
+  width: 28px; /* ✅ TAMAÑO FIJO */
+  height: 28px;
   background: var(--error);
   color: var(--F);
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: var(--fz_m2);
+  font-size: 12px;
   opacity: 0;
   transition: all var(--tr_f);
-  z-index: 3;
+  z-index: 4; /* ✅ SOBRE TODO */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0.3vh 1vh rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .gallery_item:hover .btn_del_mini {
@@ -768,6 +779,7 @@
 .btn_del_mini:hover {
   background: #e53e3e;
   transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .btn_del_mini:active {
@@ -850,7 +862,7 @@
   }
   
   .media_gallery {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }
 
@@ -861,7 +873,7 @@
   }
   
   .media_gallery {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     max-height: 40vh;
   }
   
@@ -876,8 +888,8 @@
   }
   
   .media_gallery {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 1vh;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1.5vh;
   }
   
   .info_controls {
@@ -896,6 +908,10 @@
   
   .volume_container {
     flex: 1;
+  }
+  
+  .item_preview {
+    height: 110px; /* ✅ AJUSTE MOBILE */
   }
 }
 

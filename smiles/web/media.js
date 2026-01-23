@@ -93,13 +93,65 @@ const FORMATS = {
 };
 const detectType = (f) => FORMATS.VIDEO.includes(f.type) ? 'VIDEO' : FORMATS.AUDIO.includes(f.type) ? 'AUDIO' : FORMATS.IMAGEN.includes(f.type) ? 'IMAGEN' : null;
 
+/* ==================== 🎬 GENERAR THUMBNAIL DE VIDEO ==================== */
+const generateVideoThumbnail = (file, callback) => {
+  const video = document.createElement('video');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  video.preload = 'metadata';
+  video.muted = true;
+  video.playsInline = true;
+  
+  video.onloadedmetadata = () => {
+    // Ir al segundo 1 o 10% del video
+    video.currentTime = Math.min(1, video.duration * 0.1);
+  };
+  
+  video.onseeked = () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convertir canvas a Data URL
+    const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.7);
+    callback(thumbnailUrl);
+    
+    // Limpiar
+    URL.revokeObjectURL(video.src);
+    video.remove();
+    canvas.remove();
+  };
+  
+  video.onerror = () => {
+    callback(null);
+    URL.revokeObjectURL(video.src);
+    video.remove();
+    canvas.remove();
+  };
+  
+  video.src = URL.createObjectURL(file);
+};
+
 const getDimensions = (file, cb) => {
   if (file.type.startsWith('image/')) {
-    const img = new Image(); img.onload = () => cb(img.width, img.height); img.src = URL.createObjectURL(file);
+    const img = new Image(); 
+    img.onload = () => cb(img.width, img.height); 
+    img.src = URL.createObjectURL(file);
   } else if (file.type.startsWith('video/')) {
-    const v = document.createElement('video'); v.onloadedmetadata = () => cb(v.videoWidth, v.videoHeight, v.duration); v.src = URL.createObjectURL(file);
+    const v = document.createElement('video'); 
+    v.onloadedmetadata = () => {
+      cb(v.videoWidth, v.videoHeight, v.duration);
+      URL.revokeObjectURL(v.src);
+    };
+    v.src = URL.createObjectURL(file);
   } else if (file.type.startsWith('audio/')) {
-    const a = document.createElement('audio'); a.onloadedmetadata = () => cb(null, null, a.duration); a.src = URL.createObjectURL(file);
+    const a = document.createElement('audio'); 
+    a.onloadedmetadata = () => {
+      cb(null, null, a.duration);
+      URL.revokeObjectURL(a.src);
+    };
+    a.src = URL.createObjectURL(file);
   }
 };
 
@@ -110,10 +162,39 @@ const addFiles = (files, isPasted=false) => {
     const type = detectType(f);
     if (!type) return Notificacion(`${f.name} no es un formato válido`, 'error', 2000);
     const url = URL.createObjectURL(f);
-    const mediaFile = { id: Date.now()+Math.random(), name: f.name, type, format: f.type, size: f.size, url, isPasted, addedAt: new Date().toISOString() };
-    getDimensions(f, (w,h,d)=>{ if(w)mediaFile.width=w; if(h)mediaFile.height=h; if(d)mediaFile.duration=d; updateGallery(); saveSession(false); });
-    mediaFiles.push(mediaFile); added++;
+    const mediaFile = { 
+      id: Date.now()+Math.random(), 
+      name: f.name, 
+      type, 
+      format: f.type, 
+      size: f.size, 
+      url, 
+      isPasted, 
+      addedAt: new Date().toISOString(),
+      thumbnail: null // 🎬 Para almacenar el thumbnail
+    };
+    
+    // 🎬 Generar thumbnail para videos
+    if (type === 'VIDEO') {
+      generateVideoThumbnail(f, (thumbUrl) => {
+        mediaFile.thumbnail = thumbUrl;
+        updateGallery();
+        saveSession(false);
+      });
+    }
+    
+    getDimensions(f, (w,h,d) => { 
+      if(w) mediaFile.width = w; 
+      if(h) mediaFile.height = h; 
+      if(d) mediaFile.duration = d; 
+      updateGallery(); 
+      saveSession(false); 
+    });
+    
+    mediaFiles.push(mediaFile); 
+    added++;
   });
+  
   if (!added) return;
   Notificacion(isPasted ? 'Captura pegada' : `${added} archivo(s) agregado(s)`, 'success', 1500);
   updateGallery();
@@ -141,15 +222,38 @@ const handlePaste = (e) => {
 const updateGallery = () => {
   const g = $('#mediaGallery'); $('#mediaCount').text(mediaFiles.length);
   if (!mediaFiles.length) return g.html(`<div class="gallery_empty"><i class="fas fa-folder-open"></i><p>Sin archivos</p></div>`);
-  g.html(mediaFiles.map((m,i)=>`
-    <div class="gallery_item ${i===currentIndex?'active':''}" data-i="${i}">
-      <div class="item_preview ${m.type.toLowerCase()}">${m.type==='IMAGEN'?`<img src="${m.url}" alt="${m.name}">`:`<i class="fas ${m.type==='VIDEO'?'fa-video':m.type==='AUDIO'?'fa-music':'fa-image'}"></i>`}</div>
-      <div class="item_info"><span class="item_name">${m.name}</span><span class="item_details">${bytes(m.size)}${m.duration?` • ${formatTime(m.duration)}`:''}</span></div>
-      <span class="type_badge ${m.type.toLowerCase()}"><i class="fas ${m.type==='VIDEO'?'fa-video':m.type==='AUDIO'?'fa-music':'fa-image'}"></i></span>
-      ${m.isPasted?'<span class="paste_badge"><i class="fas fa-paste"></i></span>':''}
-      <button class="btn_del_mini" data-i="${i}"><i class="fas fa-times"></i></button>
-    </div>
-  `).join(''));
+  
+  g.html(mediaFiles.map((m,i)=>{
+    let preview = '';
+    
+    // 🎬 VIDEO: Mostrar thumbnail si existe, sino icono
+    if (m.type === 'VIDEO') {
+      preview = m.thumbnail 
+        ? `<img src="${m.thumbnail}" alt="${m.name}">`
+        : `<i class="fas fa-video"></i>`;
+    }
+    // 🖼️ IMAGEN: Mostrar imagen
+    else if (m.type === 'IMAGEN') {
+      preview = `<img src="${m.url}" alt="${m.name}">`;
+    }
+    // 🎵 AUDIO: Mostrar icono
+    else {
+      preview = `<i class="fas fa-music"></i>`;
+    }
+    
+    return `
+      <div class="gallery_item ${i===currentIndex?'active':''}" data-i="${i}">
+        <div class="item_preview ${m.type.toLowerCase()}">${preview}</div>
+        <div class="item_info">
+          <span class="item_name">${m.name}</span>
+          <span class="item_details">${bytes(m.size)}${m.duration?` • ${formatTime(m.duration)}`:''}</span>
+        </div>
+        <span class="type_badge ${m.type.toLowerCase()}"><i class="fas ${m.type==='VIDEO'?'fa-video':m.type==='AUDIO'?'fa-music':'fa-image'}"></i></span>
+        ${m.isPasted?'<span class="paste_badge"><i class="fas fa-paste"></i></span>':''}
+        <button class="btn_del_mini" data-i="${i}"><i class="fas fa-times"></i></button>
+      </div>
+    `;
+  }).join(''));
 };
 
 /* ==================== PLAY ==================== */
@@ -199,7 +303,7 @@ const setupAudioVisualizer = (el, canvasSel) => {
   if (audioContext.state === 'suspended') audioContext.resume();
 
   if (!audioSource) {
-    audioSource = audioContext.createMediaElementSource(el); // create ONCE for the single audio element
+    audioSource = audioContext.createMediaElementSource(el);
   }
   if (!analyser) {
     analyser = audioContext.createAnalyser(); analyser.fftSize = 256;
@@ -309,13 +413,16 @@ const updateSlide = () => {
 /* ==================== SESSION ==================== */
 const saveSession = (notify=true) => {
   savels('mediawii_files', mediaFiles.map(m=>({
-    name:m.name,type:m.type,format:m.format,size:m.size,width:m.width,height:m.height,duration:m.duration,isPasted:m.isPasted
+    name:m.name,type:m.type,format:m.format,size:m.size,width:m.width,height:m.height,duration:m.duration,isPasted:m.isPasted,thumbnail:m.thumbnail
   })), 720);
   if (notify) Notificacion('Sesión guardada','success',1500);
 };
 const loadSession = () => {
   const s=getls('mediawii_files');
-  if (s?.length) { console.log(`✅ ${s.length} archivo(s) cargados de la sesión anterior`); Notificacion(`Sesión anterior: ${s.length} archivos`,'info',2000); }
+  if (s?.length) { 
+    console.log(`✅ ${s.length} archivo(s) cargados de la sesión anterior`); 
+    Notificacion(`Sesión anterior: ${s.length} archivos`,'info',2000); 
+  }
 };
 
 /* ==================== STOP / CLEAN ==================== */
