@@ -46,14 +46,22 @@ export const render = () => `
       </div>
 
       <div class="media_right">
-        <div class="gallery_header">
-          <h3><i class="fas fa-photo-film"></i> Archivos (<span id="mediaCount">0</span>)</h3>
+        <div class="gallery_header" id="galleryHeader">
+          <h3 class="gallery_title"><i class="fas fa-photo-film"></i> Archivos (<span id="mediaCount">0</span>)</h3>
           <div class="gallery_actions">
             <button class="btn_icon btn_add" title="Agregar"><i class="fas fa-folder-open"></i></button>
             <button class="btn_icon btn_clear" title="Limpiar"><i class="fas fa-trash"></i></button>
-            <button class="btn_icon btn_reload" title="Recargar"><i class="fas fa-rotate-right"></i></button>
+            <button class="btn_icon btn_search" title="Buscar"><i class="fas fa-search"></i></button>
           </div>
         </div>
+        
+        <div class="search_bar dpn" id="searchBar">
+          <i class="fas fa-search search_icon"></i>
+          <input type="text" id="searchInput" placeholder="Buscar archivos..." autocomplete="off">
+          <button class="btn_close_search" id="btnCloseSearch"><i class="fas fa-times"></i></button>
+          <div class="search_results" id="searchResults">0 de 0</div>
+        </div>
+
         <div class="media_gallery" id="mediaGallery"></div>
       </div>
     </div>
@@ -78,6 +86,7 @@ export const render = () => `
 /* ==================== ESTADO ==================== */
 let mediaFiles = [], currentIndex = 0, currentType = null, pasteCount = 1;
 let zoomLevel = 1, isLooping = false, currentSpeed = 1, currentVolume = 70, slideshowInterval = null;
+let searchQuery = '', isSearchActive = false; // 🔍 Estado del buscador
 
 /* Web Audio API (única conexión) */
 let audioContext = null, analyser = null, dataArray = null, audioSource = null;
@@ -93,6 +102,41 @@ const FORMATS = {
 };
 const detectType = (f) => FORMATS.VIDEO.includes(f.type) ? 'VIDEO' : FORMATS.AUDIO.includes(f.type) ? 'AUDIO' : FORMATS.IMAGEN.includes(f.type) ? 'IMAGEN' : null;
 
+/* ==================== 🔍 BUSCADOR SIMPLE ==================== */
+const toggleSearch = () => {
+  isSearchActive = !isSearchActive;
+  
+  if (isSearchActive) {
+    $('#galleryHeader').addClass('dpn');
+    $('#searchBar').removeClass('dpn');
+    setTimeout(() => $('#searchInput').focus(), 100);
+  } else {
+    closeSearch();
+  }
+};
+
+const closeSearch = () => {
+  isSearchActive = false;
+  $('#searchBar').addClass('dpn');
+  $('#galleryHeader').removeClass('dpn');
+  $('#searchInput').val('');
+  searchQuery = '';
+  updateGallery();
+};
+
+const handleSearch = (query) => {
+  searchQuery = query.toLowerCase().trim();
+  updateGallery();
+  
+  const filtered = getFilteredFiles();
+  $('#searchResults').text(`${filtered.length} de ${mediaFiles.length}`);
+};
+
+const getFilteredFiles = () => {
+  if (!searchQuery) return mediaFiles;
+  return mediaFiles.filter(m => m.name.toLowerCase().includes(searchQuery));
+};
+
 /* ==================== 🎬 GENERAR THUMBNAIL DE VIDEO ==================== */
 const generateVideoThumbnail = (file, callback) => {
   const video = document.createElement('video');
@@ -104,7 +148,6 @@ const generateVideoThumbnail = (file, callback) => {
   video.playsInline = true;
   
   video.onloadedmetadata = () => {
-    // Ir al segundo 1 o 10% del video
     video.currentTime = Math.min(1, video.duration * 0.1);
   };
   
@@ -113,11 +156,9 @@ const generateVideoThumbnail = (file, callback) => {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-    // Convertir canvas a Data URL
     const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.7);
     callback(thumbnailUrl);
     
-    // Limpiar
     URL.revokeObjectURL(video.src);
     video.remove();
     canvas.remove();
@@ -171,10 +212,9 @@ const addFiles = (files, isPasted=false) => {
       url, 
       isPasted, 
       addedAt: new Date().toISOString(),
-      thumbnail: null // 🎬 Para almacenar el thumbnail
+      thumbnail: null
     };
     
-    // 🎬 Generar thumbnail para videos
     if (type === 'VIDEO') {
       generateVideoThumbnail(f, (thumbUrl) => {
         mediaFile.thumbnail = thumbUrl;
@@ -220,37 +260,49 @@ const handlePaste = (e) => {
 
 /* ==================== GALERÍA ==================== */
 const updateGallery = () => {
-  const g = $('#mediaGallery'); $('#mediaCount').text(mediaFiles.length);
+  const g = $('#mediaGallery');
+  const filtered = getFilteredFiles();
+  
+  $('#mediaCount').text(mediaFiles.length);
+  
   if (!mediaFiles.length) return g.html(`<div class="gallery_empty"><i class="fas fa-folder-open"></i><p>Sin archivos</p></div>`);
   
-  g.html(mediaFiles.map((m,i)=>{
+  if (!filtered.length && searchQuery) {
+    return g.html(`<div class="gallery_empty"><i class="fas fa-search"></i><p>No se encontraron archivos</p><small>Intenta con otro término</small></div>`);
+  }
+  
+  g.html(filtered.map((m)=>{
+    const realIndex = mediaFiles.indexOf(m);
     let preview = '';
     
-    // 🎬 VIDEO: Mostrar thumbnail si existe, sino icono
     if (m.type === 'VIDEO') {
       preview = m.thumbnail 
         ? `<img src="${m.thumbnail}" alt="${m.name}">`
         : `<i class="fas fa-video"></i>`;
     }
-    // 🖼️ IMAGEN: Mostrar imagen
     else if (m.type === 'IMAGEN') {
       preview = `<img src="${m.url}" alt="${m.name}">`;
     }
-    // 🎵 AUDIO: Mostrar icono
     else {
       preview = `<i class="fas fa-music"></i>`;
     }
     
+    let displayName = m.name;
+    if (searchQuery) {
+      const regex = new RegExp(`(${searchQuery})`, 'gi');
+      displayName = m.name.replace(regex, '<mark>$1</mark>');
+    }
+    
     return `
-      <div class="gallery_item ${i===currentIndex?'active':''}" data-i="${i}">
+      <div class="gallery_item ${realIndex===currentIndex?'active':''}" data-i="${realIndex}">
         <div class="item_preview ${m.type.toLowerCase()}">${preview}</div>
         <div class="item_info">
-          <span class="item_name">${m.name}</span>
+          <span class="item_name">${displayName}</span>
           <span class="item_details">${bytes(m.size)}${m.duration?` • ${formatTime(m.duration)}`:''}</span>
         </div>
         <span class="type_badge ${m.type.toLowerCase()}"><i class="fas ${m.type==='VIDEO'?'fa-video':m.type==='AUDIO'?'fa-music':'fa-image'}"></i></span>
         ${m.isPasted?'<span class="paste_badge"><i class="fas fa-paste"></i></span>':''}
-        <button class="btn_del_mini" data-i="${i}"><i class="fas fa-times"></i></button>
+        <button class="btn_del_mini" data-i="${realIndex}"><i class="fas fa-times"></i></button>
       </div>
     `;
   }).join(''));
@@ -457,7 +509,13 @@ export const init = () => {
     $('.media_placeholder').removeClass('dpn'); $('.media_info').addClass('dpn');
     updateGallery(); saveSession(false); Notificacion('Todo limpiado','success',1500);
   });
-  $('.btn_reload').on('click', ()=>{ loadSession(); updateGallery(); });
+  
+  // 🔍 Eventos del buscador
+  $('.btn_search').on('click', toggleSearch);
+  $('#btnCloseSearch').on('click', closeSearch);
+  $('#searchInput').on('input', function() {
+    handleSearch($(this).val());
+  });
 
   $(document).on('click', '.btn_play', togglePlay);
   $(document).on('click', '.btn_prev', prevMedia);
@@ -497,7 +555,14 @@ export const init = () => {
   $('.btn_slide_play').on('click', ()=>{ if(slideshowInterval){clearInterval(slideshowInterval); slideshowInterval=null; $('.btn_slide_play i').attr('class','fas fa-play');} else startSlideshow(); });
   $('.modalX').on('click', ()=>{ if(slideshowInterval) clearInterval(slideshowInterval); cerrarModal('slideshowModal'); });
 
+  // ✅ FIX: SOLO APLICA ATAJOS SI EL BUSCADOR NO ESTÁ ACTIVO
   $(document).on('keydown', (e)=>{
+    // Si el buscador está activo, NO ejecutar atajos
+    if (isSearchActive) {
+      if (e.key === 'Escape') closeSearch();
+      return; // ✅ DETIENE LA EJECUCIÓN DE ATAJOS
+    }
+    
     if(!mediaFiles.length) return;
     if ([' ','ArrowLeft','ArrowRight','f','F','+','=','-','0'].includes(e.key)) e.preventDefault();
     if (e.key===' ' && currentType!=='IMAGEN') togglePlay();
@@ -518,7 +583,7 @@ export const cleanup = () => {
   mediaFiles.forEach(m=>URL.revokeObjectURL(m.url));
   mediaFiles=[];
   if (audioContext){ audioContext.close(); audioContext=null; }
-  $('#mediaZone, .btn_add, .btn_clear, .btn_reload, .modalX').off();
+  $('#mediaZone, .btn_add, .btn_clear, .btn_search, #btnCloseSearch, #searchInput, .modalX').off();
   $(document).off('click'); $(document).off('paste'); $(document).off('keydown');
   console.log('🧹 Centro Multimedia limpiado');
 };
