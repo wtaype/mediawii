@@ -1,8 +1,5 @@
-
-import $ from 'jquery';
-import { savels, getls } from './widev.js';
-
 // INFORMACIÓN DEL APP 
+export let id = 'mediawii'
 export let app = 'Mediawii'
 export let lanzamiento = 2026;
 export let autor = '@wilder.taype';

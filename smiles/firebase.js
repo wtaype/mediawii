@@ -1,8 +1,9 @@
+import { id } from './wii.js';
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-const permitir = new Set(['mediawii.web.app', 'localhost', '192.168.18.62']); // 'wtaype.me' <- agregar para ver en github pages
+const permitir = new Set([`${id}.web.app`, 'localhost', '192.168.18.62']); 
 const permitido = permitir.has(window.location.hostname);
 
 const app = permitido ? initializeApp({

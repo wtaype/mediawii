@@ -1,7 +1,7 @@
 import $ from 'jquery';
+import { app } from '../wii.js';
 import { Notificacion, wiPath, wiAnimate} from './rutadev.js';
 
-let app = 'Wiizom';
 class WiRouter {
   constructor() {
     this.ruta = {};
