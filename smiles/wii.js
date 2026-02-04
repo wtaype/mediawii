@@ -2,6 +2,7 @@
 export let id = 'mediawii'
 export let app = 'Mediawii'
 export let lanzamiento = 2026;
+export let ipdev = '192.168.18.62';
 export let autor = '@wilder.taype';
 export let link = 'https://wtaype.github.io/';
 export let version = 'v13';
