@@ -1,6 +1,6 @@
 import './smile.css';
 import $ from 'jquery';
-import { db } from '../firebase.js';
+import { db } from './firebase.js';
 import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { savels, getls, Saludar, wiSpin, wiDate, Notificacion } from '../widev.js';
 
