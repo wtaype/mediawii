@@ -1,362 +1,280 @@
 import './acerca.css';
 import $ from 'jquery';
-import { app, lanzamiento, autor, link, version } from '../wii.js';
-import { wicopy } from '../widev.js';
+import { wiVista, wicopy } from '../widev.js';
+import { app, version, autor, linkme, lanzamiento } from '../wii.js';
 
+// ── DATA ──────────────────────────────────────────────────────
+const secciones = [
+  { id:'intro',     icon:'fa-photo-film',     color:'#0EBEFF', nombre:'¿Qué es Mediawii?' },
+  { id:'stack',     icon:'fa-layer-group',    color:'#FFB800', nombre:'Stack Técnico'     },
+  { id:'filosofia', icon:'fa-lightbulb',      color:'#29C72E', nombre:'Filosofía'         },
+  { id:'version',   icon:'fa-code-branch',    color:'#7000FF', nombre:'Versiones'         },
+  { id:'contacto',  icon:'fa-satellite-dish', color:'#FF5C69', nombre:'Contacto'          },
+];
+
+const stack = [
+  { icon:'fa-bolt',        color:'#FFB800', nombre:'Vite',          ver:'7.x',    desc:'Build tool ultrarrápido con HMR instantáneo y bundling optimizado para producción.' },
+  { icon:'fa-database',    color:'#FF5C69', nombre:'jQuery',        ver:'4.x',    desc:'Manipulación DOM expresiva y elegante. Base del sistema de eventos y utilidades.' },
+  { icon:'fa-film',        color:'#0EBEFF', nombre:'HTML5 Video',   ver:'nativo', desc:'API nativa del navegador para reproducir MP4, WebM, OGG sin plugins externos.' },
+  { icon:'fa-wave-square', color:'#7000FF', nombre:'Web Audio API', ver:'nativo', desc:'Procesamiento de audio en tiempo real para el visualizador waveform y controles.' },
+  { icon:'fa-palette',     color:'#29C72E', nombre:'CSS Vars',      ver:'nativo', desc:'5 temas de color con variables CSS. Sin frameworks, puro estándar web.' },
+  { icon:'fa-star',        color:'#FF5C69', nombre:'FontAwesome',   ver:'7.x',    desc:'Iconografía completa con más de 2000 iconos sólidos y de marcas.' },
+];
+
+const principios = [
+  { icon:'fa-shield-halved', color:'#0EBEFF', titulo:'Privado',      desc:'Tus archivos nunca salen del navegador. Sin servidores, sin uploads, sin rastreo.' },
+  { icon:'fa-house',         color:'#FFB800', titulo:'100% Local',   desc:'Todo el procesamiento ocurre en tu dispositivo. Funciona sin conexión a internet.' },
+  { icon:'fa-bolt',          color:'#29C72E', titulo:'Ultra Rápido', desc:'Carga instantánea. Sin tiempos de espera. Reproducción fluida en HD y 4K.' },
+  { icon:'fa-infinity',      color:'#FF5C69', titulo:'Sin Límites',  desc:'Reproduce tantos archivos como quieras. Sin restricciones de tamaño ni duración.' },
+  { icon:'fa-heart',         color:'#7000FF', titulo:'Gratuito',     desc:'100% gratis para siempre. Sin planes premium ni funciones ocultas de pago.' },
+  { icon:'fa-feather',       color:'#00D4FF', titulo:'Ligero',       desc:'Sin frameworks CSS pesados. Interface limpia que no distrae de tu contenido.' },
+];
+
+const changelog = [
+  { ver:'v3', fecha:'Mar 2026', hito:true,  items:['FontAwesome 7.x integrado','Image Viewer con zoom y galería','Waveform en tiempo real (Web Audio API)','5 temas de color'] },
+  { ver:'v2', fecha:'Nov 2025', hito:false, items:['Audio Player con cola de pistas','Soporte FLAC y M4A','Picture in Picture nativo','Controles de velocidad x0.25–2×'] },
+  { ver:'v1', fecha:'Sep 2025', hito:false, items:['Video Player inicial','Soporte MP4, WebM, OGG','Loop inteligente','Pantalla completa y control de volumen'] },
+];
+
+// ── PLANTILLAS ────────────────────────────────────────────────
+const tplSidebar = s => `
+  <a href="#ac_${s.id}" class="ac_side_item" data-cat="${s.id}" style="--cc:${s.color}">
+    <i class="fas ${s.icon}"></i>
+    <span>${s.nombre}</span>
+  </a>`;
+
+const tplStack = s => `
+  <div class="ac_stack_card" style="--sc:${s.color}">
+    <div class="ac_stack_ico"><i class="fas ${s.icon}"></i></div>
+    <div class="ac_stack_info">
+      <div class="ac_stack_top">
+        <strong>${s.nombre}</strong>
+        <span class="ac_stack_ver">${s.ver}</span>
+      </div>
+      <p>${s.desc}</p>
+    </div>
+  </div>`;
+
+const tplPrincipio = p => `
+  <div class="ac_prin_card" style="--pc:${p.color}">
+    <div class="ac_prin_ico"><i class="fas ${p.icon}"></i></div>
+    <strong>${p.titulo}</strong>
+    <p>${p.desc}</p>
+  </div>`;
+
+const tplVersion = v => `
+  <div class="ac_ver_item ${v.hito ? 'ac_ver_hito' : ''}">
+    <div class="ac_ver_dot"></div>
+    <div class="ac_ver_body">
+      <div class="ac_ver_head">
+        <span class="ac_ver_tag">${v.ver}</span>
+        <span class="ac_ver_fecha">${v.fecha}</span>
+        ${v.hito ? '<span class="ac_ver_badge"><i class="fas fa-star"></i> Actual</span>' : ''}
+      </div>
+      <ul class="ac_ver_list">
+        ${v.items.map(i => `<li><i class="fas fa-circle-check"></i> ${i}</li>`).join('')}
+      </ul>
+    </div>
+  </div>`;
+
+// ── RENDER ────────────────────────────────────────────────────
 export const render = () => `
-  <div class="acerca_container">
-    <div class="acerca_hero">
-      <div class="hero_badge">
-        <i class="fas fa-crown"></i>
-        <span>Versión ${version}</span>
-      </div>
-      <div class="hero_logo">
-        <i class="fas fa-play-circle"></i>
-      </div>
-      <h1 class="hero_title">${app}</h1>
-      <p class="hero_subtitle">Centro multimedia completo: Videos, Audios e Imágenes en un solo lugar</p>
-      <div class="hero_stats">
-        <div class="stat_item">
-          <i class="fas fa-calendar-alt"></i>
-          <span>Desde ${lanzamiento}</span>
-        </div>
-        <div class="stat_item">
-          <i class="fas fa-video"></i>
-          <span>3 Reproductores</span>
-        </div>
-        <div class="stat_item">
-          <i class="fas fa-bolt"></i>
-          <span>100% Local</span>
-        </div>
-      </div>
+<div class="ac_wrap">
+
+  <header class="ac_header">
+    <div>
+      <span class="ac_tag"><i class="fas fa-circle-info"></i> Acerca de</span>
+      <h1 class="ac_title"><span class="ac_grad">${app}</span> — reproductor multimedia</h1>
+      <p class="ac_sub">Reproduce videos, audios e imágenes directamente en tu navegador. Sin instalación, sin registro, 100% privado y local.</p>
     </div>
-
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-info-circle"></i> Acerca de ${app}
-      </h2>
-      <div class="section_content">
-        <p><strong>${app}</strong> es un centro multimedia moderno y profesional que integra tres reproductores especializados en una sola plataforma. Lanzado en ${lanzamiento}, nace con la misión de ofrecer una <strong>experiencia multimedia completa, privada y sin límites</strong>.</p>
-        <p>Con reproductores dedicados para <strong>videos, audios e imágenes</strong>, ${app} te permite disfrutar de tus archivos multimedia con controles avanzados, diseño elegante y funcionalidades profesionales como slideshow, zoom inteligente, visualización de ondas de audio en tiempo real y mucho más.</p>
-        <p>Todo el procesamiento se realiza <strong>100% localmente</strong> en tu navegador, garantizando tu privacidad absoluta. Sin servidores, sin registro, sin rastreo. Solo tú y tus archivos multimedia.</p>
-      </div>
+    <div class="ac_header_stats">
+      <div class="ac_hstat"><span class="ac_hstat_n">${version}</span><span>Versión</span></div>
+      <div class="ac_hstat"><span class="ac_hstat_n">${lanzamiento}</span><span>Desde</span></div>
+      <div class="ac_hstat"><span class="ac_hstat_n">${stack.length}</span><span>Tecnologías</span></div>
     </div>
+  </header>
 
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-lightbulb"></i> ¿Por qué ${app}?
-      </h2>
-      <div class="features_grid">
-        <div class="feature_box">
-          <div class="feature_icon">
-            <i class="fas fa-video"></i>
-          </div>
-          <h3>Reproductor de Videos</h3>
-          <p>Controles completos: play/pause, adelantar/retroceder, velocidad, loop, volumen y pantalla completa</p>
-        </div>
-        <div class="feature_box">
-          <div class="feature_icon">
-            <i class="fas fa-music"></i>
-          </div>
-          <h3>Reproductor de Audios</h3>
-          <p>Visualización de ondas en tiempo real con Web Audio API, lista de reproducción y modo aleatorio</p>
-        </div>
-        <div class="feature_box">
-          <div class="feature_icon">
-            <i class="fas fa-images"></i>
-          </div>
-          <h3>Visor de Imágenes</h3>
-          <p>Zoom inteligente, slideshow automático, galería de miniaturas y descarga directa</p>
-        </div>
-        <div class="feature_box">
-          <div class="feature_icon">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <h3>100% Privado</h3>
-          <p>Todo el procesamiento es local. Tus archivos nunca salen de tu dispositivo</p>
-        </div>
-        <div class="feature_box">
-          <div class="feature_icon">
-            <i class="fas fa-palette"></i>
-          </div>
-          <h3>5 Temas Dinámicos</h3>
-          <p>Diseño moderno con temas: Cielo, Dulce, Paz, Mora y Futuro</p>
-        </div>
-        <div class="feature_box">
-          <div class="feature_icon">
-            <i class="fas fa-infinity"></i>
-          </div>
-          <h3>Sin Límites</h3>
-          <p>Reproduce todos los archivos que quieras, sin restricciones ni anuncios</p>
-        </div>
-      </div>
-    </div>
+  <div class="ac_layout">
+    <aside class="ac_sidebar">
+      <div class="ac_side_title"><i class="fas fa-circle-info"></i> Acerca</div>
+      ${secciones.map(tplSidebar).join('')}
+    </aside>
+    <div class="ac_content">
 
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-code-branch"></i> Información Técnica
-      </h2>
-      <div class="tech_grid">
-        <div class="tech_card">
-          <div class="tech_header">
-            <i class="fas fa-video"></i>
-            <h3>Videos</h3>
+      <!-- INTRO -->
+      <section class="ac_section" id="ac_intro">
+        <div class="ac_sec_head" style="--cc:#0EBEFF">
+          <div class="ac_sec_ico"><i class="fas fa-photo-film"></i></div>
+          <div>
+            <h2 class="ac_sec_tit">¿Qué es Mediawii?</h2>
+            <span class="ac_sec_meta">Reproductor multimedia · Local · Sin instalación</span>
           </div>
-          <ul class="tech_list">
-            <li><i class="fas fa-check"></i> MP4, WebM, OGG</li>
-            <li><i class="fas fa-check"></i> Controles avanzados</li>
-            <li><i class="fas fa-check"></i> Velocidad ajustable (0.25x - 3x)</li>
-            <li><i class="fas fa-check"></i> Picture in Picture</li>
-          </ul>
         </div>
-        <div class="tech_card">
-          <div class="tech_header">
-            <i class="fas fa-music"></i>
-            <h3>Audios</h3>
+        <div class="ac_intro_body">
+          <div class="ac_intro_txt">
+            <p><strong>${app}</strong> es un reproductor multimedia moderno que funciona completamente dentro de tu navegador. Reproduce videos en alta definición, audios con visualizador de ondas en tiempo real e imágenes con zoom y galería completa.</p>
+            <p>Nació de la necesidad de tener una herramienta rápida y privada para visualizar cualquier archivo multimedia sin depender de apps externas, sin instalación y sin que tus archivos salgan de tu dispositivo.</p>
+            <div class="ac_intro_features">
+              <div class="ac_if"><i class="fas fa-video"           style="color:#FF5C69"></i><span>Video HD hasta 4K</span></div>
+              <div class="ac_if"><i class="fas fa-wave-square"     style="color:#7000FF"></i><span>Waveform en tiempo real</span></div>
+              <div class="ac_if"><i class="fas fa-images"          style="color:#29C72E"></i><span>Galería con zoom</span></div>
+              <div class="ac_if"><i class="fas fa-shield-halved"   style="color:#0EBEFF"></i><span>100% Privado</span></div>
+              <div class="ac_if"><i class="fas fa-infinity"        style="color:#FFB800"></i><span>Sin límites de tamaño</span></div>
+              <div class="ac_if"><i class="fas fa-mobile-screen"   style="color:#FF5C69"></i><span>100% Responsive</span></div>
+            </div>
           </div>
-          <ul class="tech_list">
-            <li><i class="fas fa-check"></i> MP3, WAV, OGG, M4A</li>
-            <li><i class="fas fa-check"></i> Web Audio API optimizada</li>
-            <li><i class="fas fa-check"></i> Visualización de ondas en tiempo real</li>
-            <li><i class="fas fa-check"></i> Modo aleatorio y loop</li>
-          </ul>
-        </div>
-        <div class="tech_card">
-          <div class="tech_header">
-            <i class="fas fa-images"></i>
-            <h3>Imágenes</h3>
+          <div class="ac_dev_card">
+            <div class="ac_dev_avatar"><i class="fas fa-user-tie"></i></div>
+            <div class="ac_dev_info">
+              <strong>Wilder Taype</strong>
+              <span>${autor}</span>
+              <a href="${linkme}" target="_blank" rel="noopener" class="ac_dev_link">
+                <i class="fas fa-globe"></i> Portfolio
+              </a>
+            </div>
+            <div class="ac_dev_stats">
+              <div><span>${version}</span><small>versión</small></div>
+              <div><span>${lanzamiento}</span><small>desde</small></div>
+            </div>
           </div>
-          <ul class="tech_list">
-            <li><i class="fas fa-check"></i> JPG, PNG, GIF, WebP, SVG</li>
-            <li><i class="fas fa-check"></i> Zoom con scroll (0.5x - 5x)</li>
-            <li><i class="fas fa-check"></i> Slideshow configurable</li>
-            <li><i class="fas fa-check"></i> Soporte Ctrl+V (paste)</li>
-          </ul>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-keyboard"></i> Atajos de Teclado
-      </h2>
-      <div class="shortcuts_grid">
-        <div class="shortcut_card">
-          <div class="shortcut_header">
-            <i class="fas fa-video"></i>
-            <h3>Videos</h3>
+      <!-- STACK -->
+      <section class="ac_section" id="ac_stack">
+        <div class="ac_sec_head" style="--cc:#FFB800">
+          <div class="ac_sec_ico"><i class="fas fa-layer-group"></i></div>
+          <div>
+            <h2 class="ac_sec_tit">Stack Técnico</h2>
+            <span class="ac_sec_meta">${stack.length} tecnologías · APIs nativas del navegador</span>
           </div>
-          <ul class="shortcuts_list">
-            <li><kbd>Espacio</kbd> Play / Pause</li>
-            <li><kbd>←</kbd> <kbd>→</kbd> Anterior / Siguiente</li>
-            <li><kbd>F</kbd> Pantalla completa</li>
-            <li><kbd>Doble Click</kbd> Abrir archivos</li>
-          </ul>
         </div>
-        <div class="shortcut_card">
-          <div class="shortcut_header">
-            <i class="fas fa-music"></i>
-            <h3>Audios</h3>
-          </div>
-          <ul class="shortcuts_list">
-            <li><kbd>Espacio</kbd> Play / Pause</li>
-            <li><kbd>←</kbd> <kbd>→</kbd> Anterior / Siguiente</li>
-            <li><kbd>F</kbd> Pantalla completa</li>
-            <li><kbd>Doble Click</kbd> Abrir archivos</li>
-          </ul>
+        <div class="ac_stack_grid">
+          ${stack.map(tplStack).join('')}
         </div>
-        <div class="shortcut_card">
-          <div class="shortcut_header">
-            <i class="fas fa-images"></i>
-            <h3>Imágenes</h3>
-          </div>
-          <ul class="shortcuts_list">
-            <li><kbd>←</kbd> <kbd>→</kbd> Anterior / Siguiente</li>
-            <li><kbd>+</kbd> <kbd>=</kbd> Acercar</li>
-            <li><kbd>-</kbd> Alejar</li>
-            <li><kbd>0</kbd> Resetear zoom</li>
-            <li><kbd>F</kbd> Pantalla completa</li>
-            <li><kbd>Ctrl+V</kbd> Pegar captura</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-history"></i> Historial de Versiones
-      </h2>
-      <div class="version_timeline">
-        
-        <div class="version_item">
-          <div class="version_badge current">v11</div>
-          <div class="version_content">
-            <h3>Versión 11 - Optimización y Compactación</h3>
-            <p class="version_date"><i class="far fa-calendar"></i> Enero 22, 2026</p>
-            <ul>
-              <li>⚡ Código compacto y optimizado (reducción de 50% en media.js)</li>
-              <li>🔧 Fix crítico: Web Audio API con conexión única</li>
-              <li>🎯 Eliminado error InvalidStateError al cambiar entre medias</li>
-              <li>🚀 Rendimiento mejorado en reproducción de audios</li>
-              <li>🎨 Sistema inteligente de reutilización de AudioContext</li>
-              <li>✅ Auto-reproducción al hacer click en galería</li>
-              <li>🧹 Limpieza de recursos mejorada en cleanup()</li>
-            </ul>
+      <!-- FILOSOFIA -->
+      <section class="ac_section" id="ac_filosofia">
+        <div class="ac_sec_head" style="--cc:#29C72E">
+          <div class="ac_sec_ico"><i class="fas fa-lightbulb"></i></div>
+          <div>
+            <h2 class="ac_sec_tit">Filosofía</h2>
+            <span class="ac_sec_meta">Los ${principios.length} principios detrás de ${app}</span>
           </div>
         </div>
+        <div class="ac_prin_grid">
+          ${principios.map(tplPrincipio).join('')}
+        </div>
+      </section>
 
-        <div class="version_item">
-          <div class="version_badge">v10</div>
-          <div class="version_content">
-            <h3>Versión 10 - Lanzamiento Multimedia Profesional</h3>
-            <p class="version_date"><i class="far fa-calendar"></i> Enero 21, 2026</p>
-            <ul>
-              <li>🎬 Reproductor de videos con controles profesionales</li>
-              <li>🎵 Reproductor de audios con visualización de ondas (Web Audio API)</li>
-              <li>🖼️ Visor de imágenes con zoom inteligente y slideshow</li>
-              <li>📋 Soporte Ctrl+V para pegar capturas de pantalla</li>
-              <li>⌨️ Atajos de teclado completos (Espacio, F, +, -, 0, flechas)</li>
-              <li>🎨 Barra de progreso profesional con glow effect</li>
-              <li>🔊 Control de volumen con barra visual</li>
-              <li>📱 Galería de miniaturas con badges dinámicos</li>
-              <li>🎭 Picture in Picture para videos</li>
-              <li>🔄 Velocidad ajustable (0.25x - 3x)</li>
-              <li>♾️ Modo loop para videos y audios</li>
-              <li>💾 Persistencia de sesión con LocalStorage</li>
-              <li>📥 Descarga directa de archivos multimedia</li>
-              <li>🎨 5 temas dinámicos adaptables</li>
-              <li>🔒 100% privacidad local (sin servidores)</li>
-              <li>📱 Diseño responsive optimizado</li>
-              <li>🚀 Drag & Drop para agregar archivos</li>
-              <li>🎯 Sistema de badges (tipo, paste)</li>
-              <li>✨ Animaciones suaves con CSS transitions</li>
-              <li>🧹 Sistema de limpieza automático de recursos</li>
-            </ul>
+      <!-- VERSION -->
+      <section class="ac_section" id="ac_version">
+        <div class="ac_sec_head" style="--cc:#7000FF">
+          <div class="ac_sec_ico"><i class="fas fa-code-branch"></i></div>
+          <div>
+            <h2 class="ac_sec_tit">Versiones</h2>
+            <span class="ac_sec_meta">Historial de cambios · versión actual ${version}</span>
           </div>
         </div>
+        <div class="ac_timeline">
+          ${changelog.map(tplVersion).join('')}
+        </div>
+      </section>
 
-      </div>
-    </div>
+      <!-- CONTACTO -->
+      <section class="ac_section" id="ac_contacto">
+        <div class="ac_sec_head" style="--cc:#FF5C69">
+          <div class="ac_sec_ico"><i class="fas fa-satellite-dish"></i></div>
+          <div>
+            <h2 class="ac_sec_tit">Contacto</h2>
+            <span class="ac_sec_meta">Recursos y links del proyecto</span>
+          </div>
+        </div>
+        <div class="ac_links_grid">
+          <a href="${linkme}" target="_blank" rel="noopener" class="ac_link_card" style="--lc:#0EBEFF">
+            <i class="fas fa-globe"></i>
+            <strong>Portfolio</strong>
+            <span>wtaype.github.io</span>
+          </a>
+          <div class="ac_link_card ac_link_copy" style="--lc:#FF5C69" data-copy="${autor}">
+            <i class="fab fa-instagram"></i>
+            <strong>Instagram</strong>
+            <span>${autor}</span>
+          </div>
+          <div class="ac_link_card ac_link_copy" style="--lc:#29C72E" data-copy="${app.toLowerCase()}">
+            <i class="fas fa-photo-film"></i>
+            <strong>App ID</strong>
+            <span>${app.toLowerCase()}</span>
+          </div>
+          <div class="ac_link_card" style="--lc:#7000FF">
+            <i class="fas fa-scale-balanced"></i>
+            <strong>Licencia</strong>
+            <span>MIT · Uso libre</span>
+          </div>
+        </div>
+        <div class="ac_cta">
+          <i class="fas fa-heart ac_cta_heart"></i>
+          <h3>Hecho con amor y código</h3>
+          <p>${app} es un proyecto personal creado para explorar, aprender y construir experiencias web de calidad. Sin servidores, sin rastreo, 100% privado.</p>
+          <button class="ac_cta_btn" id="ac_copiarRepo"><i class="fas fa-copy"></i> Copiar nombre del proyecto</button>
+        </div>
+      </section>
 
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-shield-check"></i> Privacidad y Seguridad
-      </h2>
-      <div class="privacy_content">
-        <div class="privacy_card">
-          <div class="privacy_icon">
-            <i class="fas fa-lock"></i>
-          </div>
-          <h3>Procesamiento Local</h3>
-          <p>Todos los archivos multimedia se procesan en tu navegador. Ningún dato se envía a servidores externos.</p>
-        </div>
-        <div class="privacy_card">
-          <div class="privacy_icon">
-            <i class="fas fa-user-shield"></i>
-          </div>
-          <h3>Sin Rastreo</h3>
-          <p>No usamos cookies de seguimiento, análisis de terceros ni recopilamos información personal.</p>
-        </div>
-        <div class="privacy_card">
-          <div class="privacy_icon">
-            <i class="fas fa-database"></i>
-          </div>
-          <h3>Control Total</h3>
-          <p>Tú decides qué archivos cargar y puedes eliminarlos cuando quieras. Sin permanencia en servidores.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-rocket"></i> Próximas Funcionalidades
-      </h2>
-      <div class="roadmap_content">
-        <div class="roadmap_item">
-          <div class="roadmap_icon planned">
-            <i class="fas fa-play-circle"></i>
-          </div>
-          <div class="roadmap_info">
-            <h3>Listas de Reproducción Personalizadas</h3>
-            <p>Crea y guarda tus propias listas de reproducción con nombre y orden personalizado</p>
-          </div>
-        </div>
-        <div class="roadmap_item">
-          <div class="roadmap_icon planned">
-            <i class="fas fa-palette"></i>
-          </div>
-          <div class="roadmap_info">
-            <h3>Editor de Imágenes Básico</h3>
-            <p>Recortar, rotar, ajustar brillo/contraste y aplicar filtros básicos</p>
-          </div>
-        </div>
-        <div class="roadmap_item">
-          <div class="roadmap_icon planned">
-            <i class="fas fa-cloud-upload-alt"></i>
-          </div>
-          <div class="roadmap_info">
-            <h3>Exportar/Importar Sesiones</h3>
-            <p>Guarda y comparte tus sesiones multimedia en archivos JSON</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="acerca_section">
-      <h2 class="section_title">
-        <i class="fas fa-user-tie"></i> Desarrollador
-      </h2>
-      <div class="developer_card">
-        <div class="developer_avatar">
-          <i class="fas fa-user-circle"></i>
-        </div>
-        <div class="developer_info">
-          <h3>${autor}</h3>
-          <p class="developer_role">Full Stack Developer & Creator</p>
-          <p class="developer_bio">
-            Apasionado por crear herramientas útiles y accesibles que mejoren la experiencia digital. 
-            Con experiencia en desarrollo web moderno y una filosofía clara: 
-            <strong>la tecnología debe ser simple, privada y sin límites</strong>.
-          </p>
-          <div class="developer_links">
-            <a href="${link}" target="_blank" class="dev_link">
-              <i class="fas fa-globe"></i> Portafolio
-            </a>
-            <a href="https://github.com/wtaype" target="_blank" class="dev_link">
-              <i class="fab fa-github"></i> GitHub
-            </a>
-            <button class="dev_link copy_email" data-email="wilder.taype@hotmail.com">
-              <i class="fas fa-envelope"></i> Contacto
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="acerca_footer">
-      <div class="footer_quote">
-        <i class="fas fa-quote-left"></i>
-        <p>"Las mejores herramientas multimedia son aquellas que respetan tu privacidad y te dan control total"</p>
-        <i class="fas fa-quote-right"></i>
-      </div>
-      <div class="footer_info">
-        <p>© ${lanzamiento} ${app}. Hecho con <i class="fas fa-heart"></i> por ${autor}</p>
-        <p class="footer_version">Versión actual: <strong>${version}</strong></p>
-      </div>
     </div>
   </div>
-`;
 
+</div>`;
+
+// ── INIT ──────────────────────────────────────────────────────
 export const init = () => {
-  $('.copy_email').on('click', function() {
-    const email = $(this).data('email');
-    wicopy(email, this, '¡Email copiado!');
+  // Sidebar nav
+  $(document).on('click.ac', '.ac_side_item', function(e) {
+    e.preventDefault();
+    $('.ac_side_item').removeClass('active');
+    $(this).addClass('active');
+    const target = $($(this).attr('href'));
+    if (target.length) $('html,body').animate({ scrollTop: target.offset().top - 80 }, 400);
   });
 
-  console.log(`✅ Acerca de ${app} ${version} cargado`);
+  // Scroll spy
+  const sections = $('.ac_section');
+  const spy = () => {
+    const st = $(window).scrollTop() + 120;
+    sections.each(function() {
+      const $s = $(this), top = $s.offset().top, bot = top + $s.outerHeight();
+      if (st >= top && st < bot) {
+        const id = $s.attr('id')?.replace('ac_', '');
+        $('.ac_side_item').removeClass('active');
+        $(`.ac_side_item[data-cat="${id}"]`).addClass('active');
+      }
+    });
+  };
+  $(window).on('scroll.ac', spy);
+  spy();
+  $('.ac_side_item').first().addClass('active');
+
+  // Copy links
+  $(document).on('click.ac', '.ac_link_copy', function() {
+    wicopy($(this).data('copy'), this, '¡Copiado!');
+  });
+
+  // CTA copy
+  $(document).on('click.ac', '#ac_copiarRepo', function() {
+    wicopy(app.toLowerCase(), this, `¡${app} copiado!`);
+  });
+
+  // Animations
+  wiVista('.ac_section',    null, { anim:'wi_fadeUp', stagger:120 });
+  wiVista('.ac_stack_card', null, { anim:'wi_fadeUp', stagger:80  });
+  wiVista('.ac_prin_card',  null, { anim:'wi_fadeUp', stagger:60  });
+  wiVista('.ac_ver_item',   null, { anim:'wi_fadeUp', stagger:100 });
+  wiVista('.ac_link_card',  null, { anim:'wi_fadeUp', stagger:80  });
+
+  console.log(`📽️ ${app} ${version} · Acerca OK`);
 };
 
 export const cleanup = () => {
-  $('.copy_email').off();
-  console.log('🧹 Acerca limpiado');
+  $(document).off('.ac');
+  $(window).off('.ac');
 };

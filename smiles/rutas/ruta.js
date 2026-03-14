@@ -1,88 +1,79 @@
 import $ from 'jquery';
 import { app } from '../wii.js';
-import { Notificacion, wiPath, wiAnimate} from './rutadev.js';
+import { Notificacion } from '../widev.js';
+import { wiPath, wiFade } from './rutadev.js';
 
-class WiRouter {
+class WiRutas {
   constructor() {
-    this.ruta = {};
-    this.defaultRoute = '/inicio';
-    this.currentRoute = null;
-    this.contentContainer = '#wimain';
-    this.isNavigating = false;
-    this.prefetchCache = new Set();
+    this.rutas   = {};          // mapa de rutas
+    this.actual  = null;        // ruta activa
+    this.modActual = null;
+    this.cargand = false;       // flag navegación
+    this.precach = new Set();   // rutas precargadas
+    this.PAGE    = 'web';       // carpeta de páginas
+    this.HOME    = 'inicio';    // ruta por defecto
+    this.main    = '#wimain';   // contenedor principal
   }
 
-  register(path, module) {
-    this.ruta[path] = module;
-  }
+  register(ruta, mod) { this.rutas[ruta] = mod; }
 
-  async navigate(path, addToHistory = true) {
-    if (this.isNavigating) return;
-    this.isNavigating = true;
+  async navigate(ruta, historial = true) {
+    if (this.cargand) return;
+    this.cargand = true;
 
-    let normalizedPath = wiPath.clean(path);
-    if (normalizedPath === '/') normalizedPath = this.defaultRoute;
+    let norm = wiPath.limpiar(ruta);
+    if (norm === '/') norm = `/${this.HOME}`;
 
-    let moduleLoader = this.ruta[normalizedPath];
-    if (!moduleLoader) moduleLoader = () => import('../web/404.js');
-
+    const cargar = this.rutas[norm] ?? (() => import(`../${this.PAGE}/404.js`));
     try {
-      this.updateActiveNav(normalizedPath);
+      // Cleanup módulo anterior
+      this.modActual?.cleanup?.();
 
-      const module = typeof moduleLoader === 'function' ? await moduleLoader() : moduleLoader;
-      
-      const content = await module.render();
-      await wiAnimate.fade(this.contentContainer, content);
+      const mod   = typeof cargar === 'function' ? await cargar() : cargar;
+      const html  = await mod.render();
+      const titulo = `${norm.slice(1).replace(/^(\w)/, c => c.toUpperCase()) || 'Inicio'} - ${app}`;
 
-      const pageName = normalizedPath.replace('/', '').replace(/^(\w)/, c => c.toUpperCase()) || 'Hora';
-      document.title = `${pageName} - ${app}`;
+      this.marcarNav(norm); await wiFade(this.main, html);
 
-      if (module.init) module.init();
-
-      if (addToHistory) {
-        const urlPath = normalizedPath === this.defaultRoute ? '/' : normalizedPath;
-        wiPath.update(urlPath, document.title);
-      }
-
-      this.currentRoute = normalizedPath;
-      console.log(`${normalizedPath}`);
-    } catch (error) {console.error('Error:', error); Notificacion('Error al cargar la página', 'error', 2000); } 
-    finally {this.isNavigating = false;}
+      document.title = titulo; mod.init?.();
+      if (historial) wiPath.poner(norm === `/${this.HOME}` ? '/' : norm, titulo);
+      this.actual = norm;
+      this.modActual = mod;
+    } catch (err) { Notificacion('Error en la ruta'); console.error('Error navegando:', err);
+    } finally {
+      this.cargand = false;
+    }
   }
 
-  updateActiveNav(path) {
-    const page = path.replace('/', '') || 'hora';
-    $('.winav_item').removeClass('active');
-    $(`.winav_item[data-page="${page}"]`).addClass('active');
+  marcarNav(norm) {
+    const pag = norm.slice(1) || this.HOME;
+    $('.nv_item').removeClass('active');
+    $(`.nv_item[data-page="${pag}"]`).addClass('active');
   }
 
-  async prefetch(path) {
-    let normalizedPath = wiPath.clean(path);
-    if (normalizedPath === '/') normalizedPath = this.defaultRoute;
-    
-    if (this.prefetchCache.has(normalizedPath) || typeof this.ruta[normalizedPath] !== 'function') return;
-
-    console.log(`${normalizedPath}`);
-    try {
-      const module = await this.ruta[normalizedPath]();
-      this.ruta[normalizedPath] = module;
-      this.prefetchCache.add(normalizedPath);
-    } catch (e) {console.warn(`Prefetch error: ${normalizedPath}`); }
+  async prefetch(ruta) {
+    let norm = wiPath.limpiar(ruta);
+    if (norm === '/') norm = `/${this.HOME}`;
+    if (this.precach.has(norm) || typeof this.rutas[norm] !== 'function') return;
+    try { this.rutas[norm] = await this.rutas[norm](); this.precach.add(norm); }
+    catch (e) { console.warn('Prefetch:', norm); }
   }
 
   init() {
-    $(document).on('click', '.winav_item', (e) => {
+    const rActual = wiPath.actual === '/' ? `/${this.HOME}` : wiPath.limpiar(wiPath.actual);
+    this.marcarNav(rActual); // Nav activo desde ruta actual — sin parpadeo
+
+    // Clicks en nav
+    $(document).on('click', '.nv_item', (e) => {
       e.preventDefault();
-      const page = $(e.currentTarget).data('page');
-      this.navigate(page === 'hora' ? '/' : `/${page}`);
+      const pag = $(e.currentTarget).data('page');
+      this.navigate(pag === this.HOME ? '/' : `/${pag}`);
     });
-
+    
     window.addEventListener('popstate', (e) => {
-      this.navigate(e.state?.path || wiPath.current, false);
-    });
-
-    this.navigate(wiPath.current, false);
+      this.navigate(e.state?.ruta || wiPath.actual, false);
+    }); // Botón atrás/adelante    
+    this.navigate(wiPath.actual, false); // Carga inicial
   }
 }
-
-export const rutas = new WiRouter();
+export const rutas = new WiRutas();

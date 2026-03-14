@@ -1,508 +1,306 @@
 import './descubre.css';
 import $ from 'jquery';
-import { app, version } from '../wii.js';
-import { abrirModal, cerrarModal } from '../widev.js';
+import { app, version, autor, linkme } from '../wii.js';
+import { wiVista, year, wiTip, wicopy } from '../widev.js';
 
+// ============================================================
+// 📦 DATA
+// ============================================================
+const stats = [
+  { num: '3',    label: 'Reproductores',  icon: 'fa-photo-film',     color: '#0EBEFF' },
+  { num: '17+',  label: 'Formatos',       icon: 'fa-file-video',     color: '#7000FF' },
+  { num: '100%', label: 'Privado',        icon: 'fa-shield-halved',  color: '#FF5C69' },
+  { num: year(), label: 'Actualizado',    icon: 'fa-calendar-check', color: '#29C72E' },
+];
+
+const reproductores = [
+  { icon: 'fa-video',  color: '#FF5C69', label: 'Videos',   desc: 'MP4 · WebM · OGG · AVI · MOV', url: '/videos' },
+  { icon: 'fa-music',  color: '#7000FF', label: 'Audios',   desc: 'MP3 · WAV · M4A · FLAC · OGG',  url: '/audios' },
+  { icon: 'fa-images', color: '#29C72E', label: 'Imágenes', desc: 'JPG · PNG · GIF · SVG · WebP',   url: '/images' },
+];
+
+const beneficios = [
+  { icon: 'fa-video',               color: 'Dulce', titulo: 'Video Player HD',
+    desc: 'Reproduce MP4, WebM, OGG y más con controles profesionales. Velocidad ajustable, loop inteligente y Picture in Picture nativo.' },
+  { icon: 'fa-wave-square',         color: 'Mora',  titulo: 'Audio + Waveform',
+    desc: 'Escucha MP3, WAV, M4A con visualizador de ondas en tiempo real gracias a la Web Audio API del navegador.' },
+  { icon: 'fa-magnifying-glass-plus', color: 'Paz', titulo: 'Image Viewer',
+    desc: 'Visualiza JPG, PNG, GIF, SVG con zoom inteligente, slideshow automático y vista galería en grid.' },
+  { icon: 'fa-shield-halved',       color: 'Cielo', titulo: '100% Privado',
+    desc: 'Todo el procesamiento es local. Tus archivos nunca salen de tu navegador. Sin servidores, sin rastreo.' },
+  { icon: 'fa-infinity',            color: 'Dulce', titulo: 'Sin Límites',
+    desc: 'Sin restricciones de tamaño, duración ni cantidad de archivos. Reproduce todo lo que quieras.' },
+  { icon: 'fa-bolt',                color: 'Paz',   titulo: 'Ultra Rápido',
+    desc: 'Carga instantánea. Sin tiempos de espera. Funciona incluso sin conexión a internet.' },
+];
+
+const pasos = [
+  { num: '1', icon: 'fa-upload',        titulo: 'Sube o arrastra',      desc: 'Drag & drop directo al reproductor. Sin instalación ni registro previo.' },
+  { num: '2', icon: 'fa-play-circle',   titulo: 'Reproduce al instante', desc: 'Controles profesionales: velocidad, loop, volumen y pantalla completa.' },
+  { num: '3', icon: 'fa-shield-halved', titulo: 'Privacidad total',      desc: 'Tus archivos nunca se suben al servidor. Siempre en tu dispositivo.' },
+];
+
+const testimonios = [
+  { avatar: '👩‍💻', nombre: 'Ana Rodríguez',  rol: 'Editora de Contenido',
+    texto: 'Con Mediawii reviso mis videos de grabación sin instalar nada. Simple, rápido y mis archivos nunca salen de mi PC.', estrellas: 5 },
+  { avatar: '👨‍🎵', nombre: 'Luis Paredes',   rol: 'Productor Musical',
+    texto: 'El visualizador de waveform en tiempo real es increíble. Escucho mis pistas en cualquier navegador sin depender de apps.', estrellas: 5 },
+  { avatar: '📸',  nombre: 'Valeria Castro',  rol: 'Fotógrafa',
+    texto: 'El Image Viewer con zoom y galería es perfecto para revisar mis fotos RAW convertidas. Todo en el navegador, sin drama.', estrellas: 5 },
+  { avatar: '🎬',  nombre: 'Rodrigo Huanca',  rol: 'Videógrafo Freelance',
+    texto: 'Uso Mediawii para previsualizar mis clips antes de editar. El Picture in Picture me permite trabajar con el video flotante.', estrellas: 5 },
+];
+
+const tecnologias = [
+  { icon: 'fas fa-film',          label: 'HTML5 Video',    color: '#FF5C69' },
+  { icon: 'fas fa-wave-square',   label: 'Web Audio API',  color: '#7000FF' },
+  { icon: 'fab fa-js',            label: 'JavaScript ES6+',color: '#FFB800' },
+  { icon: 'fab fa-css3-alt',      label: 'CSS3 Moderno',   color: '#0EBEFF' },
+  { icon: 'fas fa-bolt',          label: 'Vite',           color: '#29C72E' },
+  { icon: 'fas fa-mobile-screen', label: 'Responsive',     color: '#FF8C00' },
+];
+
+// ============================================================
+// 🎨 RENDER
+// ============================================================
 export const render = () => `
-  <div class="descubre_container">
-    <!-- HERO CON CTA PRINCIPAL -->
-    <div class="descubre_hero">
-      <div class="hero_badge_top">
-        <i class="fas fa-fire"></i>
-        <span>Más de 10,000 archivos multimedia procesados</span>
+<div class="dc_wrap">
+
+  <!-- ══ HERO ══ -->
+  <section class="dc_hero">
+    <div class="dc_hero_orb dc_orb1"></div>
+    <div class="dc_hero_orb dc_orb2"></div>
+    <div class="dc_hero_orb dc_orb3"></div>
+    <div class="dc_hero_body">
+      <div class="dc_hero_logo">
+        <img src="${import.meta.env.BASE_URL}logo.webp" alt="${app}" loading="lazy">
       </div>
-      <div class="hero_icon">
-        <i class="fas fa-play-circle"></i>
+      <div class="dc_hero_badge"><i class="fas fa-photo-film"></i> Reproductor Multimedia Profesional</div>
+      <h1 class="dc_hero_tit">${app}</h1>
+      <p class="dc_hero_sub">
+        Tu centro <strong>multimedia</strong> en el navegador.
+        Videos HD, audios con waveform y galería de imágenes.
+        Todo <strong>100% local</strong>, sin subir tus archivos.
+      </p>
+      <div class="dc_hero_stats">
+        ${stats.map(s => `
+          <div class="dc_stat" style="--sc:${s.color}">
+            <i class="fas ${s.icon}" style="color:${s.color}"></i>
+            <strong>${s.num}</strong>
+            <span>${s.label}</span>
+          </div>`).join('')}
       </div>
-      <h1 class="hero_title">Tu Centro Multimedia Completo con ${app}</h1>
-      <p class="hero_subtitle">Videos, Audios e Imágenes en un solo lugar. <strong>100% Gratis. 100% Privado.</strong></p>
-      <div class="hero_cta">
-        <a href="/videos" class="btn_primary">
-          <i class="fas fa-rocket"></i> Comenzar Ahora
-        </a>
-        <button class="btn_secondary" data-modal="modalDemo">
-          <i class="fas fa-video"></i> Ver Demo
-        </button>
+      <div class="dc_hero_btns">
+        <a href="/videos" class="dc_btn_p dc_btn_glow"><i class="fas fa-play-circle"></i> Comenzar ahora</a>
+        <button class="dc_btn_s" id="dc_compartir"><i class="fas fa-share-nodes"></i> Compartir</button>
       </div>
-      <div class="hero_badges">
-        <div class="badge_item">
-          <i class="fas fa-shield-check"></i>
-          <span>100% Privado</span>
-        </div>
-        <div class="badge_item">
-          <i class="fas fa-infinity"></i>
-          <span>Uso Ilimitado</span>
-        </div>
-        <div class="badge_item">
-          <i class="fas fa-bolt"></i>
-          <span>Ultra Rápido</span>
-        </div>
-      </div>
+      <div class="dc_hero_scroll"><i class="fas fa-chevron-down"></i></div>
     </div>
+  </section>
 
-    <!-- BENEFICIOS CLAVE -->
-    <div class="benefits_quick">
-      <h2 class="section_title_center">
-        <i class="fas fa-star"></i> ¿Por qué elegir ${app}?
-      </h2>
-      <div class="benefits_grid">
-        <div class="benefit_quick">
-          <div class="benefit_number">01</div>
-          <div class="benefit_icon_quick">
-            <i class="fas fa-video"></i>
-          </div>
-          <h3>Reproductor de Videos</h3>
-          <p>Reproduce <strong>MP4, WebM, OGG</strong> con controles avanzados: velocidad, loop, PiP y más</p>
-          <a href="/videos" class="btn_learn">Probar ahora →</a>
-        </div>
-
-        <div class="benefit_quick">
-          <div class="benefit_number">02</div>
-          <div class="benefit_icon_quick">
-            <i class="fas fa-music"></i>
-          </div>
-          <h3>Reproductor de Audios</h3>
-          <p><strong>Visualización de ondas en tiempo real</strong> con Web Audio API, lista y modo aleatorio</p>
-          <a href="/audios" class="btn_learn">Probar ahora →</a>
-        </div>
-
-        <div class="benefit_quick">
-          <div class="benefit_number">03</div>
-          <div class="benefit_icon_quick">
-            <i class="fas fa-images"></i>
-          </div>
-          <h3>Visor de Imágenes</h3>
-          <p><strong>Zoom inteligente, slideshow</strong> y galería de miniaturas para todas tus fotos</p>
-          <a href="/images" class="btn_learn">Probar ahora →</a>
-        </div>
-      </div>
+  <!-- ══ COUNTER BAND ══ -->
+  <div class="dc_counter_band">
+    <div class="dc_counter_item">
+      <span class="dc_counter_num" data-target="3">0</span>
+      <p>Reproductores integrados</p>
     </div>
-
-    <!-- PRUEBA SOCIAL -->
-    <div class="social_proof">
-      <div class="proof_stats">
-        <div class="stat_box">
-          <div class="stat_number" data-count="2500">0</div>
-          <div class="stat_label">Usuarios Activos</div>
-        </div>
-        <div class="stat_box">
-          <div class="stat_number" data-count="10000">0</div>
-          <div class="stat_label">Archivos Procesados</div>
-        </div>
-        <div class="stat_box">
-          <div class="stat_number" data-count="8500">0</div>
-          <div class="stat_label">Sesiones Multimedia</div>
-        </div>
-        <div class="stat_box">
-          <div class="stat_number" data-count="99">0</div>
-          <div class="stat_label">% Satisfacción</div>
-        </div>
-      </div>
+    <div class="dc_counter_sep"></div>
+    <div class="dc_counter_item">
+      <span class="dc_counter_num" data-target="17">0</span><span>+</span>
+      <p>Formatos de archivo</p>
     </div>
-
-    <!-- CTA REGISTRO/LOGIN -->
-    <div class="auth_cta_section">
-      <div class="auth_cta_content">
-        <div class="auth_icon">
-          <i class="fas fa-user-plus"></i>
-        </div>
-        <h2>¿Quieres guardar tus listas de reproducción?</h2>
-        <p>Crea una cuenta <strong>gratuita</strong> y sincroniza tus archivos multimedia en todos tus dispositivos</p>
-        <div class="auth_benefits">
-          <div class="auth_benefit">
-            <i class="fas fa-cloud"></i>
-            <span>Sincronización en la nube</span>
-          </div>
-          <div class="auth_benefit">
-            <i class="fas fa-list"></i>
-            <span>Listas personalizadas</span>
-          </div>
-          <div class="auth_benefit">
-            <i class="fas fa-history"></i>
-            <span>Historial de reproducción</span>
-          </div>
-        </div>
-        <div class="auth_buttons">
-          <button class="btn_register" data-modal="modalRegister">
-            <i class="fas fa-user-plus"></i> Crear Cuenta Gratis
-          </button>
-          <button class="btn_login" data-modal="modalLogin">
-            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-          </button>
-        </div>
-        <p class="auth_note">
-          <i class="fas fa-info-circle"></i> También puedes usar ${app} sin cuenta, todas las funciones están disponibles
-        </p>
-      </div>
+    <div class="dc_counter_sep"></div>
+    <div class="dc_counter_item">
+      <span class="dc_counter_num" data-target="100">0</span><span>%</span>
+      <p>Privado y local</p>
     </div>
-
-    <!-- CARACTERÍSTICAS DESTACADAS -->
-    <div class="features_showcase">
-      <h2 class="section_title_center">
-        <i class="fas fa-magic"></i> Todo lo que necesitas en un solo lugar
-      </h2>
-      <div class="showcase_grid">
-        <div class="showcase_card">
-          <div class="showcase_visual">
-            <i class="fas fa-upload"></i>
-          </div>
-          <h3>Drag & Drop</h3>
-          <p>Arrastra archivos multimedia directamente. Sin límites de tamaño</p>
-          <ul class="showcase_list">
-            <li><i class="fas fa-check"></i> Múltiples formatos soportados</li>
-            <li><i class="fas fa-check"></i> Carga instantánea</li>
-            <li><i class="fas fa-check"></i> Sin restricciones</li>
-          </ul>
-        </div>
-
-        <div class="showcase_card">
-          <div class="showcase_visual">
-            <i class="fas fa-cogs"></i>
-          </div>
-          <h3>Controles Avanzados</h3>
-          <p>Velocidad ajustable, loop, shuffle y más funciones profesionales</p>
-          <ul class="showcase_list">
-            <li><i class="fas fa-check"></i> Picture in Picture</li>
-            <li><i class="fas fa-check"></i> Atajos de teclado</li>
-            <li><i class="fas fa-check"></i> Pantalla completa</li>
-          </ul>
-        </div>
-
-        <div class="showcase_card">
-          <div class="showcase_visual">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <h3>Visualización en Tiempo Real</h3>
-          <p>Ondas de audio animadas con Web Audio API</p>
-          <ul class="showcase_list">
-            <li><i class="fas fa-check"></i> Canvas interactivo</li>
-            <li><i class="fas fa-check"></i> 40 barras de frecuencia</li>
-            <li><i class="fas fa-check"></i> Gradientes personalizables</li>
-          </ul>
-        </div>
-
-        <div class="showcase_card">
-          <div class="showcase_visual">
-            <i class="fas fa-palette"></i>
-          </div>
-          <h3>5 Temas Visuales</h3>
-          <p>Diseño moderno con transiciones suaves</p>
-          <ul class="showcase_list">
-            <li><i class="fas fa-check"></i> Cielo, Dulce, Paz, Mora, Futuro</li>
-            <li><i class="fas fa-check"></i> Cambio instantáneo</li>
-            <li><i class="fas fa-check"></i> Persistencia automática</li>
-          </ul>
-        </div>
-      </div>
+    <div class="dc_counter_sep"></div>
+    <div class="dc_counter_item">
+      <span class="dc_counter_num" data-target="5">0</span>
+      <p>Temas de color</p>
     </div>
+  </div>
 
-    <!-- COMPARACIÓN -->
-    <div class="comparison_section">
-      <h2 class="section_title_center">
-        <i class="fas fa-balance-scale"></i> ${app} vs Reproductores Tradicionales
-      </h2>
-      <div class="comparison_table_wrapper">
-        <table class="comparison_table">
-          <thead>
-            <tr>
-              <th>Característica</th>
-              <th class="highlight">${app}</th>
-              <th>Otros</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><i class="fas fa-dollar-sign"></i> Precio</td>
-              <td class="highlight"><strong>GRATIS</strong></td>
-              <td>$4.99-$19.99</td>
-            </tr>
-            <tr>
-              <td><i class="fas fa-infinity"></i> Límites</td>
-              <td class="highlight"><strong>Ilimitado</strong></td>
-              <td>Límites de archivos</td>
-            </tr>
-            <tr>
-              <td><i class="fas fa-shield-alt"></i> Privacidad</td>
-              <td class="highlight"><strong>100% Local</strong></td>
-              <td>Envío a servidores</td>
-            </tr>
-            <tr>
-              <td><i class="fas fa-ad"></i> Publicidad</td>
-              <td class="highlight"><strong>Sin anuncios</strong></td>
-              <td>Anuncios molestos</td>
-            </tr>
-            <tr>
-              <td><i class="fas fa-video"></i> Reproductores</td>
-              <td class="highlight"><strong>3 en 1</strong></td>
-              <td>1 función</td>
-            </tr>
-            <tr>
-              <td><i class="fas fa-palette"></i> Temas</td>
-              <td class="highlight"><strong>5 temas</strong></td>
-              <td>1 tema fijo</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <!-- ══ REPRODUCTORES ══ -->
+  <section class="dc_sec">
+    <div class="dc_sec_head">
+      <div class="dc_sec_badge"><i class="fas fa-photo-film"></i> Reproductores</div>
+      <h2 class="dc_sec_tit">Elige tu <span class="dc_grad">reproductor</span></h2>
+      <p class="dc_sec_sub">3 reproductores profesionales para cada tipo de archivo multimedia</p>
     </div>
+    <div class="dc_cat_grid">
+      ${reproductores.map(r => `
+        <a href="${r.url}" class="dc_cat_card wi_fadeUp" style="--cc:${r.color}">
+          <div class="dc_cat_ico"><i class="fas ${r.icon}"></i></div>
+          <div class="dc_cat_info">
+            <strong>${r.label}</strong>
+            <span>${r.desc}</span>
+          </div>
+          <div class="dc_cat_arr"><i class="fas fa-arrow-right"></i></div>
+        </a>`).join('')}
+    </div>
+  </section>
 
-    <!-- TESTIMONIOS -->
-    <div class="testimonials_section">
-      <h2 class="section_title_center">
-        <i class="fas fa-quote-left"></i> Lo que dicen nuestros usuarios
-      </h2>
-      <div class="testimonials_grid">
-        <div class="testimonial_card">
-          <div class="stars">★★★★★</div>
-          <p class="testimonial_text">"El mejor reproductor web que he usado. Las ondas de audio son impresionantes"</p>
-          <div class="testimonial_author">
-            <div class="author_avatar">C</div>
+  <!-- ══ CARACTERÍSTICAS ══ -->
+  <section class="dc_sec dc_sec_alt">
+    <div class="dc_sec_head">
+      <div class="dc_sec_badge"><i class="fas fa-star"></i> Características</div>
+      <h2 class="dc_sec_tit">Todo lo que <span class="dc_grad">necesitas</span></h2>
+      <p class="dc_sec_sub">Reproductores profesionales con características diseñadas para tu uso diario</p>
+    </div>
+    <div class="dc_feat_grid">
+      ${beneficios.map(f => `
+        <div class="dc_feat_card wi_fadeUp dc_color_${f.color.toLowerCase()}">
+          <div class="dc_feat_ico"><i class="fas ${f.icon}"></i></div>
+          <h3>${f.titulo}</h3>
+          <p>${f.desc}</p>
+        </div>`).join('')}
+    </div>
+  </section>
+
+  <!-- ══ CÓMO FUNCIONA ══ -->
+  <section class="dc_sec">
+    <div class="dc_sec_head">
+      <div class="dc_sec_badge"><i class="fas fa-route"></i> Cómo funciona</div>
+      <h2 class="dc_sec_tit">3 pasos para <span class="dc_grad">reproducir tus archivos</span></h2>
+      <p class="dc_sec_sub">Sin curva de aprendizaje. Arrastra y reproduce desde el primer segundo</p>
+    </div>
+    <div class="dc_pasos">
+      ${pasos.map((p, i) => `
+        <div class="dc_paso wi_fadeUp">
+          <div class="dc_paso_num">${p.num}</div>
+          <div class="dc_paso_ico"><i class="fas ${p.icon}"></i></div>
+          <h3>${p.titulo}</h3>
+          <p>${p.desc}</p>
+        </div>
+        ${i < pasos.length - 1 ? '<div class="dc_paso_sep"><i class="fas fa-chevron-right"></i></div>' : ''}`
+      ).join('')}
+    </div>
+  </section>
+
+  <!-- ══ TESTIMONIOS ══ -->
+  <section class="dc_sec dc_sec_alt">
+    <div class="dc_sec_head">
+      <div class="dc_sec_badge"><i class="fas fa-comments"></i> Testimonios</div>
+      <h2 class="dc_sec_tit">Lo que dicen quienes ya <span class="dc_grad">reproducen mejor</span></h2>
+      <p class="dc_sec_sub">Personas reales que disfrutan sus archivos con Mediawii</p>
+    </div>
+    <div class="dc_test_grid">
+      ${testimonios.map(t => `
+        <div class="dc_test_card wi_fadeUp">
+          <div class="dc_test_stars">${'<i class="fas fa-star"></i>'.repeat(t.estrellas)}</div>
+          <p class="dc_test_txt">"${t.texto}"</p>
+          <div class="dc_test_autor">
+            <span class="dc_test_avatar">${t.avatar}</span>
             <div>
-              <div class="author_name">Carlos Ruiz</div>
-              <div class="author_role">DJ Profesional</div>
+              <strong>${t.nombre}</strong>
+              <span>${t.rol}</span>
             </div>
           </div>
-        </div>
-
-        <div class="testimonial_card">
-          <div class="stars">★★★★★</div>
-          <p class="testimonial_text">"Perfecto para presentaciones. El slideshow funciona sin problemas"</p>
-          <div class="testimonial_author">
-            <div class="author_avatar">L</div>
-            <div>
-              <div class="author_name">Laura Méndez</div>
-              <div class="author_role">Diseñadora</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="testimonial_card">
-          <div class="stars">★★★★★</div>
-          <p class="testimonial_text">"Simple, rápido y privado. Todo lo que necesito en un reproductor"</p>
-          <div class="testimonial_author">
-            <div class="author_avatar">M</div>
-            <div>
-              <div class="author_name">Miguel Ángel</div>
-              <div class="author_role">Fotógrafo</div>
-            </div>
-          </div>
-        </div>
-      </div>
+        </div>`).join('')}
     </div>
+  </section>
 
-    <!-- CTA FINAL -->
-    <div class="cta_final">
-      <div class="cta_content">
-        <h2>¿Listo para disfrutar de tus archivos multimedia?</h2>
-        <p>Únete a <strong>+2,500 usuarios</strong> que ya usan ${app} diariamente</p>
-        <div class="cta_buttons">
-          <a href="/videos" class="btn_cta_large">
-            <i class="fas fa-rocket"></i> Comenzar Gratis Ahora
-          </a>
-          <button class="btn_outline_large" data-modal="modalFeatures">
-            <i class="fas fa-list"></i> Ver todas las características
-          </button>
+  <!-- ══ TECNOLOGÍA ══ -->
+  <section class="dc_sec">
+    <div class="dc_sec_head">
+      <div class="dc_sec_badge"><i class="fas fa-code"></i> Stack técnico</div>
+      <h2 class="dc_sec_tit">Construido con <span class="dc_grad">APIs nativas</span></h2>
+      <p class="dc_sec_sub">Sin plugins ni dependencias pesadas. Solo lo mejor del estándar web</p>
+    </div>
+    <div class="dc_tech_grid">
+      ${tecnologias.map(t => `
+        <div class="dc_tech_item wi_fadeUp" style="--tc:${t.color}">
+          <i class="${t.icon}" style="color:${t.color}"></i>
+          <span>${t.label}</span>
+        </div>`).join('')}
+    </div>
+  </section>
+
+  <!-- ══ CTA FINAL ══ -->
+  <section class="dc_cta_sec">
+    <div class="dc_cta_wrap wi_fadeUp">
+      <div class="dc_cta_glow"></div>
+      <div class="dc_cta_particles">
+        ${Array.from({length:6}).map(()=>'<span class="dc_particle"></span>').join('')}
+      </div>
+      <div class="dc_cta_inner">
+        <span class="dc_cta_emoji">🎬</span>
+        <h2>¿Listo para reproducir<br>tus archivos?</h2>
+        <p>Sin instalación · Sin registro · 100% gratis para siempre</p>
+        <div class="dc_cta_chips">
+          ${reproductores.map(r => `
+            <a href="${r.url}" class="dc_chip" style="--cc:${r.color}" ${wiTip(r.desc)}>
+              <i class="fas ${r.icon}"></i> ${r.label}
+            </a>`).join('')}
         </div>
-        <p class="cta_note">
-          <i class="fas fa-check-circle"></i> Sin instalación 
-          <i class="fas fa-check-circle"></i> Sin registro obligatorio 
-          <i class="fas fa-check-circle"></i> 100% gratis
+        <div class="dc_cta_btns">
+          <a href="/videos" class="dc_btn_p dc_btn_lg dc_btn_glow"><i class="fas fa-play-circle"></i> Comenzar ahora</a>
+          <button class="dc_btn_s dc_btn_lg" id="dc_compartir2"><i class="fas fa-share-nodes"></i> Compartir</button>
+        </div>
+        <p class="dc_footer_txt">
+          ${app} ${version} · Hecho con <i class="fas fa-heart"></i> por
+          <a href="${linkme}" target="_blank" rel="noopener">${autor}</a> · ${year()}
         </p>
       </div>
     </div>
+  </section>
 
-    <!-- FAQ -->
-    <div class="faq_section">
-      <h2 class="section_title_center">
-        <i class="fas fa-question-circle"></i> Preguntas Frecuentes
-      </h2>
-      <div class="faq_grid">
-        <div class="faq_item">
-          <h4><i class="fas fa-chevron-right"></i> ¿Es realmente gratis?</h4>
-          <p>Sí, 100% gratis. Sin límites, sin anuncios, sin costos ocultos. Siempre.</p>
-        </div>
-        <div class="faq_item">
-          <h4><i class="fas fa-chevron-right"></i> ¿Necesito cuenta?</h4>
-          <p>No es obligatorio. Todas las funciones están disponibles sin registro. La cuenta es opcional para sincronizar listas.</p>
-        </div>
-        <div class="faq_item">
-          <h4><i class="fas fa-chevron-right"></i> ¿Mis archivos están seguros?</h4>
-          <p>Todo se procesa localmente. Tus archivos nunca salen de tu navegador.</p>
-        </div>
-        <div class="faq_item">
-          <h4><i class="fas fa-chevron-right"></i> ¿Qué formatos soporta?</h4>
-          <p>Videos: MP4, WebM, OGG. Audios: MP3, WAV, OGG, M4A. Imágenes: JPG, PNG, GIF, WebP, SVG.</p>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>`;
 
-  <!-- MODALES -->
-  <div id="modalDemo" class="wiModal">
-    <div class="modalBody" style="background:var(--wb);max-width:800px">
-      <button class="modalX"><i class="fas fa-times"></i></button>
-      <div style="padding:3vh 2vw;font-family:var(--ff_P)">
-        <h2 style="color:var(--tx);margin-bottom:2vh;text-align:center">
-          <i class="fas fa-video" style="color:var(--mco)"></i> Demo de ${app}
-        </h2>
-        <div style="background:var(--bg1);padding:4vh 2vw;border-radius:12px;text-align:center">
-          <i class="fas fa-play-circle" style="font-size:5rem;color:var(--mco);margin-bottom:2vh"></i>
-          <h3 style="color:var(--tx);margin-bottom:1vh">Video demostrativo próximamente</h3>
-          <p style="color:var(--txe);margin-bottom:3vh">Mientras tanto, prueba directamente los reproductores:</p>
-          <a href="/videos" class="btn_primary" style="display:inline-flex;margin:0.5vh">
-            <i class="fas fa-video"></i> Videos
-          </a>
-          <a href="/audios" class="btn_secondary" style="display:inline-flex;margin:0.5vh">
-            <i class="fas fa-music"></i> Audios
-          </a>
-          <a href="/images" class="btn_secondary" style="display:inline-flex;margin:0.5vh">
-            <i class="fas fa-images"></i> Imágenes
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+// ============================================================
+// 🔢 COUNTER ANIMATION
+// ============================================================
+const _animateCounters = () => {
+  $('.dc_counter_num').each(function () {
+    const $el = $(this), target = +$el.data('target'), duration = 1800;
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      $el.text(Math.floor(ease * target).toLocaleString());
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+};
 
-  <div id="modalRegister" class="wiModal">
-    <div class="modalBody" style="background:var(--wb)">
-      <button class="modalX"><i class="fas fa-times"></i></button>
-      <div style="padding:3vh 2vw;font-family:var(--ff_P)">
-        <div style="text-align:center;margin-bottom:2vh">
-          <i class="fas fa-user-plus" style="font-size:4rem;color:var(--mco)"></i>
-        </div>
-        <h2 style="color:var(--tx);margin-bottom:2vh;text-align:center">Crear Cuenta Gratis</h2>
-        <p style="color:var(--txe);text-align:center;margin-bottom:3vh">Sincroniza tus listas en todos tus dispositivos</p>
-        <form style="display:flex;flex-direction:column;gap:2vh">
-          <input type="text" placeholder="Nombre completo" style="padding:1.5vh 2vw;border-radius:0.8vh;border:1px solid var(--bg5);background:var(--bg1);color:var(--tx);font-size:var(--fz_m3)">
-          <input type="email" placeholder="Email" style="padding:1.5vh 2vw;border-radius:0.8vh;border:1px solid var(--bg5);background:var(--bg1);color:var(--tx);font-size:var(--fz_m3)">
-          <input type="password" placeholder="Contraseña (mín. 6 caracteres)" style="padding:1.5vh 2vw;border-radius:0.8vh;border:1px solid var(--bg5);background:var(--bg1);color:var(--tx);font-size:var(--fz_m3)">
-          <button type="submit" class="btn_primary" style="width:100%;padding:1.5vh;font-size:var(--fz_m4)">
-            <i class="fas fa-user-plus"></i> Crear Cuenta
-          </button>
-        </form>
-        <p style="text-align:center;margin-top:2vh;color:var(--txe);font-size:var(--fz_m2)">
-          ¿Ya tienes cuenta? <button data-modal="modalLogin" style="background:none;border:none;color:var(--mco);cursor:pointer;font-weight:600">Inicia sesión</button>
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalLogin" class="wiModal">
-    <div class="modalBody" style="background:var(--wb)">
-      <button class="modalX"><i class="fas fa-times"></i></button>
-      <div style="padding:3vh 2vw;font-family:var(--ff_P)">
-        <div style="text-align:center;margin-bottom:2vh">
-          <i class="fas fa-sign-in-alt" style="font-size:4rem;color:var(--mco)"></i>
-        </div>
-        <h2 style="color:var(--tx);margin-bottom:2vh;text-align:center">Iniciar Sesión</h2>
-        <p style="color:var(--txe);text-align:center;margin-bottom:3vh">Accede a tus listas sincronizadas</p>
-        <form style="display:flex;flex-direction:column;gap:2vh">
-          <input type="email" placeholder="Email" style="padding:1.5vh 2vw;border-radius:0.8vh;border:1px solid var(--bg5);background:var(--bg1);color:var(--tx);font-size:var(--fz_m3)">
-          <input type="password" placeholder="Contraseña" style="padding:1.5vh 2vw;border-radius:0.8vh;border:1px solid var(--bg5);background:var(--bg1);color:var(--tx);font-size:var(--fz_m3)">
-          <button type="submit" class="btn_primary" style="width:100%;padding:1.5vh;font-size:var(--fz_m4)">
-            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-          </button>
-        </form>
-        <p style="text-align:center;margin-top:2vh;color:var(--txe);font-size:var(--fz_m2)">
-          ¿No tienes cuenta? <button data-modal="modalRegister" style="background:none;border:none;color:var(--mco);cursor:pointer;font-weight:600">Regístrate gratis</button>
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalFeatures" class="wiModal">
-    <div class="modalBody" style="background:var(--wb);max-width:900px">
-      <button class="modalX"><i class="fas fa-times"></i></button>
-      <div style="padding:3vh 2vw;font-family:var(--ff_P)">
-        <h2 style="color:var(--tx);margin-bottom:3vh;text-align:center">
-          <i class="fas fa-list" style="color:var(--mco)"></i> Todas las Características
-        </h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2vh">
-          <div style="background:var(--bg1);padding:2vh;border-radius:12px">
-            <h4 style="color:var(--mco);margin-bottom:1vh"><i class="fas fa-video"></i> Videos</h4>
-            <ul style="font-size:var(--fz_m2);color:var(--tx);line-height:1.8">
-              <li>MP4, WebM, OGG</li>
-              <li>Velocidad ajustable</li>
-              <li>Picture in Picture</li>
-              <li>Pantalla completa</li>
-            </ul>
-          </div>
-          <div style="background:var(--bg1);padding:2vh;border-radius:12px">
-            <h4 style="color:var(--mco);margin-bottom:1vh"><i class="fas fa-music"></i> Audios</h4>
-            <ul style="font-size:var(--fz_m2);color:var(--tx);line-height:1.8">
-              <li>MP3, WAV, OGG, M4A</li>
-              <li>Ondas en tiempo real</li>
-              <li>Lista de reproducción</li>
-              <li>Modo aleatorio</li>
-            </ul>
-          </div>
-          <div style="background:var(--bg1);padding:2vh;border-radius:12px">
-            <h4 style="color:var(--mco);margin-bottom:1vh"><i class="fas fa-images"></i> Imágenes</h4>
-            <ul style="font-size:var(--fz_m2);color:var(--tx);line-height:1.8">
-              <li>JPG, PNG, GIF, WebP, SVG</li>
-              <li>Zoom con scroll</li>
-              <li>Slideshow automático</li>
-              <li>Galería de miniaturas</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-`;
-
+// ============================================================
+// ⚡ INIT
+// ============================================================
 export const init = () => {
-  // Abrir modales
-  $('[data-modal]').on('click', function() {
-    const modalId = $(this).data('modal');
-    cerrarModal('modalRegister');
-    cerrarModal('modalLogin');
-    abrirModal(modalId);
-  });
+  wiVista('.dc_cat_card',  null, { anim: 'wi_fadeUp', stagger: 60  });
+  wiVista('.dc_feat_card', null, { anim: 'wi_fadeUp', stagger: 80  });
+  wiVista('.dc_paso',      null, { anim: 'wi_fadeUp', stagger: 120 });
+  wiVista('.dc_tech_item', null, { anim: 'wi_fadeUp', stagger: 60  });
+  wiVista('.dc_test_card', null, { anim: 'wi_fadeUp', stagger: 80  });
+  wiVista('.dc_cta_wrap',  null, { anim: 'wi_fadeUp' });
 
-  // Cerrar modales
-  $('.modalX').on('click', function() {
-    $(this).closest('.wiModal').attr('id', (i, id) => (cerrarModal(id), id));
-  });
+  const $band = $('.dc_counter_band')[0];
+  if ($band) {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { _animateCounters(); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe($band);
+  }
 
-  // Animación de números
-  const animarNumeros = () => {
-    $('.stat_number').each(function() {
-      const $this = $(this);
-      const objetivo = parseInt($this.data('count'));
-      const duracion = 2000;
-      const pasos = 60;
-      const incremento = objetivo / pasos;
-      let actual = 0;
-      
-      const temporizador = setInterval(() => {
-        actual += incremento;
-        if (actual >= objetivo) {
-          $this.text(objetivo.toLocaleString());
-          clearInterval(temporizador);
-        } else {
-          $this.text(Math.floor(actual).toLocaleString());
-        }
-      }, duracion / pasos);
-    });
+  const _share = (el) => {
+    const url = window.location.origin + '/';
+    if (navigator.share) {
+      navigator.share({ title: app, text: `🎬 ${app} — Reproduce videos, audios e imágenes en tu navegador`, url }).catch(() => {});
+    } else {
+      wicopy(url, el, '¡Link copiado! ✨');
+    }
   };
 
-  const observador = new IntersectionObserver((entradas) => {
-    entradas.forEach(entrada => {
-      if (entrada.isIntersecting) {
-        animarNumeros();
-        observador.disconnect();
-      }
-    });
-  }, { threshold: 0.3 });
+  $('#dc_compartir').on('click',  function () { _share(this); });
+  $('#dc_compartir2').on('click', function () { _share(this); });
 
-  const seccionStats = document.querySelector('.social_proof');
-  if (seccionStats) observador.observe(seccionStats);
-
-  console.log(`✅ Descubre ${app} ${version} cargado - Marketing multimedia activado`);
+  console.log(`🎬 ${app} ${version} · Descubre ${year()}`);
 };
 
 export const cleanup = () => {
-  $('[data-modal], .modalX').off();
-  console.log('🧹 Descubre limpiado');
+  $('#dc_compartir, #dc_compartir2').off('click');
+  console.log('🧹 Descubre');
 };

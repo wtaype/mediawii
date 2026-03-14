@@ -1,18 +1,16 @@
 /* ==================== CONTENEDOR PRINCIPAL ==================== */
 .media_container {
   width: 100%;
-  height: 100vh;
+  height: 93.7vh;
   overflow: hidden;
-  background: var(--bg1);
-  padding: 2vh;
   box-sizing: border-box;
 }
 
 /* ==================== LAYOUT PRINCIPAL (70% - 28%) ==================== */
 .media_layout {
   display: grid;
-  grid-template-columns: 70% 28%;
-  gap: 2%;
+  grid-template-columns: 70% 29%;
+  gap: 1%;
   height: 100%;
   max-width: 2000px;
   margin: 0 auto;
@@ -540,14 +538,14 @@
 
 /* GALLERY ✅ OPTIMIZADA PARA MUCHOS ARCHIVOS */
 .media_gallery {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden; /* ✅ PREVIENE OVERFLOW HORIZONTAL */
-  padding: 2vh;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* ✅ CARDS MÁS GRANDES */
-  gap: 2vh; /* ✅ MÁS ESPACIO ENTRE CARDS */
-  align-content: start;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1vh;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1vh;
+    align-content: start;
 }
 
 .media_gallery::-webkit-scrollbar {
@@ -685,7 +683,7 @@
 }
 
 .item_details {
-  font-size: var(--fz_s5);
+  font-size: var(--fz_s3);
   color: var(--txe);
   line-height: 1.2;
 }
